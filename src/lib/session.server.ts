@@ -1,14 +1,14 @@
 import { useSession } from "@tanstack/react-start/server";
 
 export type RMSession = {
-  userId?: string;
-  username?: string;
-  globalName?: string;
-  avatar?: string;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  oauthState?: string;
+  userId?: string | undefined;
+  username?: string | undefined;
+  globalName?: string | undefined;
+  avatar?: string | undefined;
+  accessToken?: string | undefined;
+  refreshToken?: string | undefined;
+  expiresAt?: number | undefined;
+  oauthState?: string | undefined;
 };
 
 function sessionConfig() {
