@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/public/bot/sync")({
           const guildId = String(data["guild_id"] ?? "");
           const { data: num, error: numError } = await supabaseAdmin.rpc(
             "next_case_number",
-            { p_guild_id: guildId },
+            { p_guild: guildId },
           );
           if (numError) return json({ error: numError.message }, 500);
           const { error } = await supabaseAdmin.from("mod_cases").insert({
