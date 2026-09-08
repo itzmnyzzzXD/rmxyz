@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthDiscordCallbackRouteImport } from './routes/api/auth/discord/callback'
 import { Route as ApiAuthDiscordLoginRouteImport } from './routes/api/auth/discord/login'
+import { Route as ApiPublicBotSyncRouteImport } from './routes/api/public/bot/sync'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const ApiAuthDiscordLoginRoute = ApiAuthDiscordLoginRouteImport.update({
   path: '/api/auth/discord/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBotSyncRoute = ApiPublicBotSyncRouteImport.update({
+  id: '/api/public/bot/sync',
+  path: '/api/public/bot/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
+  '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
+  '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,6 +61,7 @@ export interface FileRoutesById {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
+  '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -61,18 +70,21 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/discord/callback'
     | '/api/auth/discord/login'
+    | '/api/public/bot/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api/auth/logout'
     | '/api/auth/discord/callback'
     | '/api/auth/discord/login'
+    | '/api/public/bot/sync'
   id:
     | '__root__'
     | '/'
     | '/api/auth/logout'
     | '/api/auth/discord/callback'
     | '/api/auth/discord/login'
+    | '/api/public/bot/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,6 +92,7 @@ export interface RootRouteChildren {
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthDiscordCallbackRoute: typeof ApiAuthDiscordCallbackRoute
   ApiAuthDiscordLoginRoute: typeof ApiAuthDiscordLoginRoute
+  ApiPublicBotSyncRoute: typeof ApiPublicBotSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -112,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthDiscordLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bot/sync': {
+      id: '/api/public/bot/sync'
+      path: '/api/public/bot/sync'
+      fullPath: '/api/public/bot/sync'
+      preLoaderRoute: typeof ApiPublicBotSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -120,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthDiscordCallbackRoute: ApiAuthDiscordCallbackRoute,
   ApiAuthDiscordLoginRoute: ApiAuthDiscordLoginRoute,
+  ApiPublicBotSyncRoute: ApiPublicBotSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
