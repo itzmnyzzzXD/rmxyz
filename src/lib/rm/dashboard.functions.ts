@@ -18,6 +18,14 @@ import {
 } from "@/lib/discord.server";
 import { DEFAULTS, type ModuleKey } from "@/lib/rm/modules";
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export type SessionUser = {
   id: string;
   name: string;
@@ -175,12 +183,12 @@ export const getGuildConfig = createServerFn({ method: "POST" })
         .eq("guild_id", data.guildId)
         .order("word"),
     ]);
-    const config: Record<string, { enabled: boolean; settings: Record<string, unknown> }> = {};
+    const config: Record<string, { enabled: boolean; settings: Record<string, JsonValue> }> = {};
     for (const key of Object.keys(DEFAULTS)) {
       const row = (rows ?? []).find((r) => r.module === key);
       config[key] = {
         enabled: row?.enabled ?? false,
-        settings: (row?.settings as Record<string, unknown>) ?? {},
+        settings: (row?.settings as Record<string, JsonValue>) ?? {},
       };
     }
     const channels = await fetchBotGuildChannels(data.guildId);
@@ -198,14 +206,14 @@ export const saveGuildConfig = createServerFn({ method: "POST" })
     guildId: string;
     module: string;
     enabled: boolean;
-    settings: Record<string, unknown>;
+    settings: Record<string, JsonValue>;
   }) =>
     z
       .object({
         guildId: z.string().min(5),
         module: z.string().min(2),
         enabled: z.boolean(),
-        settings: z.record(z.string(), z.unknown()),
+        settings: z.record(z.string(), z.custom<JsonValue>()),
       })
       .parse(input),
   )
@@ -306,7 +314,7 @@ export const queueBotTask = createServerFn({ method: "POST" })
   .inputValidator((input: {
     guildId: string;
     taskType: string;
-    payload?: Record<string, unknown>;
+    payload?: Record<string, JsonValue>;
   }) =>
     z
       .object({
@@ -320,7 +328,7 @@ export const queueBotTask = createServerFn({ method: "POST" })
           "announce",
           "sync_slash",
         ]),
-        payload: z.record(z.string(), z.unknown()).optional(),
+        payload: z.record(z.string(), z.custom<JsonValue>()).optional(),
       })
       .parse(input),
   )
