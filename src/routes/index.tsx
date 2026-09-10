@@ -49,7 +49,7 @@ function Index() {
           <span className="text-xl font-semibold tracking-tight">RM</span>
         </div>
         <a
-          href="/api/auth/discord/login"
+          href="/login"
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
           Sign in with Discord
@@ -80,7 +80,7 @@ function Index() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href="/api/auth/discord/login"
+              href="/login"
               className="rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
             >
               Open dashboard
