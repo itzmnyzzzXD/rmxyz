@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { buildAuthorizeUrl, discordConfig, isDiscordConfigured } from "@/lib/discord.server";
-import { getRMSession } from "@/lib/session.server";
 
 const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
+const STATE_COOKIE = "__Host-rm_oauth_state";
 
 export const Route = createFileRoute("/api/auth/discord/login")({
   server: {
@@ -16,17 +16,14 @@ export const Route = createFileRoute("/api/auth/discord/login")({
           ];
           return new Response(
             `Discord application credentials are not configured yet. Missing: ${missing.join(", ")}. Add these as server-side environment variables in Vercel.`,
-            { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } },
+            { status: 503, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } },
           );
         }
 
         const state = crypto.randomUUID();
-        const session = await getRMSession();
-        await session.update({ oauthState: state });
-
         const location = buildAuthorizeUrl(REDIRECT_URI, state);
         const cookie = [
-          `rm_oauth_state=${encodeURIComponent(state)}`,
+          `${STATE_COOKIE}=${encodeURIComponent(state)}`,
           "Path=/",
           "Max-Age=600",
           "HttpOnly",
