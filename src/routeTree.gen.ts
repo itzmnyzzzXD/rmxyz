@@ -16,6 +16,10 @@ import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthDiscordOauthCallbackRouteImport } from './routes/api/auth/discord/oauth-callback'
 import { Route as ApiAuthDiscordLoginRouteImport } from './routes/api/auth/discord/login'
 import { Route as ApiAuthLocalLoginRouteImport } from './routes/api/auth/local-login'
+import { Route as ApiAuthPasskeyOptionsRouteImport } from './routes/api/auth/passkey/options'
+import { Route as ApiAuthPasskeyVerifyRouteImport } from './routes/api/auth/passkey/verify'
+import { Route as ApiAuthPasskeyRegisterOptionsRouteImport } from './routes/api/auth/passkey/register-options'
+import { Route as ApiAuthPasskeyRegisterVerifyRouteImport } from './routes/api/auth/passkey/register-verify'
 import { Route as ApiVerifyRequestEmailRouteImport } from './routes/api/verify/request-email'
 import { Route as ApiVerifyConfirmRouteImport } from './routes/api/verify/confirm'
 import { Route as ApiPublicBotSyncRouteImport } from './routes/api/public/bot/sync'
@@ -30,6 +34,10 @@ const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({ id: '/api/auth/logo
 const ApiAuthDiscordOauthCallbackRoute = ApiAuthDiscordOauthCallbackRouteImport.update({ id: '/api/auth/discord/oauth-callback', path: '/api/auth/discord/oauth-callback', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthDiscordLoginRoute = ApiAuthDiscordLoginRouteImport.update({ id: '/api/auth/discord/login', path: '/api/auth/discord/login', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthLocalLoginRoute = ApiAuthLocalLoginRouteImport.update({ id: '/api/auth/local-login', path: '/api/auth/local-login', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthPasskeyOptionsRoute = ApiAuthPasskeyOptionsRouteImport.update({ id: '/api/auth/passkey/options', path: '/api/auth/passkey/options', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthPasskeyVerifyRoute = ApiAuthPasskeyVerifyRouteImport.update({ id: '/api/auth/passkey/verify', path: '/api/auth/passkey/verify', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthPasskeyRegisterOptionsRoute = ApiAuthPasskeyRegisterOptionsRouteImport.update({ id: '/api/auth/passkey/register-options', path: '/api/auth/passkey/register-options', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthPasskeyRegisterVerifyRoute = ApiAuthPasskeyRegisterVerifyRouteImport.update({ id: '/api/auth/passkey/register-verify', path: '/api/auth/passkey/register-verify', getParentRoute: () => rootRouteImport } as any)
 const ApiVerifyRequestEmailRoute = ApiVerifyRequestEmailRouteImport.update({ id: '/api/verify/request-email', path: '/api/verify/request-email', getParentRoute: () => rootRouteImport } as any)
 const ApiVerifyConfirmRoute = ApiVerifyConfirmRouteImport.update({ id: '/api/verify/confirm', path: '/api/verify/confirm', getParentRoute: () => rootRouteImport } as any)
 const ApiPublicBotSyncRoute = ApiPublicBotSyncRouteImport.update({ id: '/api/public/bot/sync', path: '/api/public/bot/sync', getParentRoute: () => rootRouteImport } as any)
@@ -45,6 +53,10 @@ export interface FileRoutesByFullPath {
   '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
   '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
+  '/api/auth/passkey/options': typeof ApiAuthPasskeyOptionsRoute
+  '/api/auth/passkey/verify': typeof ApiAuthPasskeyVerifyRoute
+  '/api/auth/passkey/register-options': typeof ApiAuthPasskeyRegisterOptionsRoute
+  '/api/auth/passkey/register-verify': typeof ApiAuthPasskeyRegisterVerifyRoute
   '/api/verify/request-email': typeof ApiVerifyRequestEmailRoute
   '/api/verify/confirm': typeof ApiVerifyConfirmRoute
   '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
@@ -62,6 +74,10 @@ export interface FileRoutesById {
   '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
   '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
+  '/api/auth/passkey/options': typeof ApiAuthPasskeyOptionsRoute
+  '/api/auth/passkey/verify': typeof ApiAuthPasskeyVerifyRoute
+  '/api/auth/passkey/register-options': typeof ApiAuthPasskeyRegisterOptionsRoute
+  '/api/auth/passkey/register-verify': typeof ApiAuthPasskeyRegisterVerifyRoute
   '/api/verify/request-email': typeof ApiVerifyRequestEmailRoute
   '/api/verify/confirm': typeof ApiVerifyConfirmRoute
   '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
@@ -84,6 +100,10 @@ export interface RootRouteChildren {
   ApiAuthDiscordOauthCallbackRoute: typeof ApiAuthDiscordOauthCallbackRoute
   ApiAuthDiscordLoginRoute: typeof ApiAuthDiscordLoginRoute
   ApiAuthLocalLoginRoute: typeof ApiAuthLocalLoginRoute
+  ApiAuthPasskeyOptionsRoute: typeof ApiAuthPasskeyOptionsRoute
+  ApiAuthPasskeyVerifyRoute: typeof ApiAuthPasskeyVerifyRoute
+  ApiAuthPasskeyRegisterOptionsRoute: typeof ApiAuthPasskeyRegisterOptionsRoute
+  ApiAuthPasskeyRegisterVerifyRoute: typeof ApiAuthPasskeyRegisterVerifyRoute
   ApiVerifyRequestEmailRoute: typeof ApiVerifyRequestEmailRoute
   ApiVerifyConfirmRoute: typeof ApiVerifyConfirmRoute
   ApiPublicBotSyncRoute: typeof ApiPublicBotSyncRoute
@@ -101,6 +121,10 @@ declare module '@tanstack/react-router' {
     '/api/auth/discord/oauth-callback': { id: '/api/auth/discord/oauth-callback'; path: '/api/auth/discord/oauth-callback'; fullPath: '/api/auth/discord/oauth-callback'; preLoaderRoute: typeof ApiAuthDiscordOauthCallbackRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/discord/login': { id: '/api/auth/discord/login'; path: '/api/auth/discord/login'; fullPath: '/api/auth/discord/login'; preLoaderRoute: typeof ApiAuthDiscordLoginRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/local-login': { id: '/api/auth/local-login'; path: '/api/auth/local-login'; fullPath: '/api/auth/local-login'; preLoaderRoute: typeof ApiAuthLocalLoginRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/auth/passkey/options': { id: '/api/auth/passkey/options'; path: '/api/auth/passkey/options'; fullPath: '/api/auth/passkey/options'; preLoaderRoute: typeof ApiAuthPasskeyOptionsRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/auth/passkey/verify': { id: '/api/auth/passkey/verify'; path: '/api/auth/passkey/verify'; fullPath: '/api/auth/passkey/verify'; preLoaderRoute: typeof ApiAuthPasskeyVerifyRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/auth/passkey/register-options': { id: '/api/auth/passkey/register-options'; path: '/api/auth/passkey/register-options'; fullPath: '/api/auth/passkey/register-options'; preLoaderRoute: typeof ApiAuthPasskeyRegisterOptionsRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/auth/passkey/register-verify': { id: '/api/auth/passkey/register-verify'; path: '/api/auth/passkey/register-verify'; fullPath: '/api/auth/passkey/register-verify'; preLoaderRoute: typeof ApiAuthPasskeyRegisterVerifyRouteImport; parentRoute: typeof rootRouteImport }
     '/api/verify/request-email': { id: '/api/verify/request-email'; path: '/api/verify/request-email'; fullPath: '/api/verify/request-email'; preLoaderRoute: typeof ApiVerifyRequestEmailRouteImport; parentRoute: typeof rootRouteImport }
     '/api/verify/confirm': { id: '/api/verify/confirm'; path: '/api/verify/confirm'; fullPath: '/api/verify/confirm'; preLoaderRoute: typeof ApiVerifyConfirmRouteImport; parentRoute: typeof rootRouteImport }
     '/api/public/bot/sync': { id: '/api/public/bot/sync'; path: '/api/public/bot/sync'; fullPath: '/api/public/bot/sync'; preLoaderRoute: typeof ApiPublicBotSyncRouteImport; parentRoute: typeof rootRouteImport }
@@ -118,6 +142,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthDiscordOauthCallbackRoute,
   ApiAuthDiscordLoginRoute,
   ApiAuthLocalLoginRoute,
+  ApiAuthPasskeyOptionsRoute,
+  ApiAuthPasskeyVerifyRoute,
+  ApiAuthPasskeyRegisterOptionsRoute,
+  ApiAuthPasskeyRegisterVerifyRoute,
   ApiVerifyRequestEmailRoute,
   ApiVerifyConfirmRoute,
   ApiPublicBotSyncRoute,
