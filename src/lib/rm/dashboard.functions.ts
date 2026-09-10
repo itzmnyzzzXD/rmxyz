@@ -2,7 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRMSession } from "@/lib/session.server";
-import { avatarUrl, botOwnerIds, canManageGuild, fetchBotGuildChannels, fetchUserGuilds, guildIconUrl, isDiscordConfigured, refreshAccessToken } from "@/lib/discord.server";
+import { avatarUrl, botOwnerIds, canManageGuild, fetchBotGuild, fetchBotGuildChannels, fetchUserGuilds, guildIconUrl, isDiscordConfigured, refreshAccessToken } from "@/lib/discord.server";
 import { DEFAULTS } from "@/lib/rm/modules";
 import { queueTask, store, upsertGuild, type JsonValue } from "@/lib/rm/store.server";
 
@@ -19,16 +19,11 @@ async function requireUser() {
     try {
       const refreshed = await refreshAccessToken(refreshToken);
       accessToken = refreshed.access_token;
-      await session.update({
-        accessToken,
-        refreshToken: refreshed.refresh_token ?? refreshToken,
-        expiresAt: Date.now() + refreshed.expires_in * 1000,
-      });
+      await session.update({ accessToken, refreshToken: refreshed.refresh_token ?? refreshToken, expiresAt: Date.now() + refreshed.expires_in * 1000 });
     } catch {
       throw new Error("DISCORD_SESSION_EXPIRED");
     }
   }
-
   return { userId, accessToken, data: session.data };
 }
 
@@ -53,24 +48,43 @@ export const getAuthState = createServerFn({ method: "GET" }).handler(async () =
 export const listManageableGuilds = createServerFn({ method: "GET" }).handler(async (): Promise<ManageableGuild[]> => {
   const { accessToken } = await requireUser();
   const guilds = (await fetchUserGuilds(accessToken)).filter(canManageGuild);
-  return guilds.map((g) => {
+  const rows = await Promise.all(guilds.map(async (g) => {
     const known = store.guilds.get(g.id);
-    return { id: g.id, name: g.name, icon: guildIconUrl(g.id, g.icon), botPresent: Boolean(known?.botPresent), memberCount: known?.memberCount ?? 0 };
-  }).sort((a, b) => Number(b.botPresent) - Number(a.botPresent) || a.name.localeCompare(b.name));
+    const botGuild = await fetchBotGuild(g.id);
+    return {
+      id: g.id,
+      name: g.name,
+      icon: guildIconUrl(g.id, g.icon),
+      botPresent: Boolean(botGuild || known?.botPresent),
+      memberCount: botGuild?.approximate_member_count ?? known?.memberCount ?? 0,
+    };
+  }));
+  return rows.sort((a, b) => Number(b.botPresent) - Number(a.botPresent) || a.name.localeCompare(b.name));
 });
 
 const guildInput = (input: { guildId: string }) => z.object({ guildId: z.string().min(5) }).parse(input);
 
 export const getGuildOverview = createServerFn({ method: "POST" }).inputValidator(guildInput).handler(async ({ data }) => {
   await requireGuildAccess(data.guildId);
-  const guild = store.guilds.get(data.guildId);
+  const known = store.guilds.get(data.guildId);
+  const live = await fetchBotGuild(data.guildId);
+  const guild = live || known;
   const cases = store.cases.filter((x) => x.guild_id === data.guildId).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 8);
   const security = store.security.filter((x) => x.guild_id === data.guildId).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 6);
   const stats = store.stats.filter((x) => x.guild_id === data.guildId).sort((a, b) => String(a.day).localeCompare(String(b.day))).slice(-14);
   const counts = new Map<string, number>();
   for (const row of store.usage.filter((x) => x.guildId === data.guildId).slice(-200)) counts.set(row.command, (counts.get(row.command) ?? 0) + 1);
   return {
-    guild: guild ? { id: guild.id, name: guild.name, icon: guildIconUrl(guild.id, guild.icon), memberCount: guild.memberCount, channelCount: guild.channelCount, roleCount: guild.roleCount, botPresent: guild.botPresent, lastSeenAt: guild.lastSeenAt } : null,
+    guild: guild ? {
+      id: guild.id,
+      name: guild.name,
+      icon: live ? guildIconUrl(live.id, live.icon) : guildIconUrl(known!.id, known!.icon),
+      memberCount: live?.approximate_member_count ?? ("memberCount" in guild ? guild.memberCount : 0),
+      channelCount: "channelCount" in guild ? guild.channelCount : 0,
+      roleCount: "roleCount" in guild ? guild.roleCount : live?.roles.length ?? 0,
+      botPresent: Boolean(live || known?.botPresent),
+      lastSeenAt: known?.lastSeenAt ?? null,
+    } : null,
     cases, security, stats,
     topCommands: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([command, count]) => ({ command, count })),
   };
