@@ -185,13 +185,25 @@ async def prefix_verify(ctx: commands.Context):
     await send_verify_flow(ctx)
 
 
+# Keep the slash version as an optional shortcut, while prefix commands are the
+# official onboarding entry point.
 @bot.tree.command(name="verify", description="Create your secure RM Dashboard account")
 async def verify(interaction: discord.Interaction):
     await send_verify_flow(interaction)
 
 
+async def run_main_safely():
+    try:
+        await main()
+    except BaseException:
+        session = getattr(bot, "session", None)
+        if session is not None and not session.closed:
+            await session.close()
+        raise
+
+
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(run_main_safely())
     except KeyboardInterrupt:
         print("shutting down")
