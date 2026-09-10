@@ -3,6 +3,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { buildAuthorizeUrl, discordConfig, isDiscordConfigured } from "@/lib/discord.server";
 
 const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
+const STATE_COOKIE = "__Host-rm_oauth_state";
 
 function signState(value: string, secret: string) {
   return createHmac("sha256", secret).update(value).digest("base64url");
@@ -43,11 +44,20 @@ export const Route = createFileRoute("/api/auth/discord/login")({
 
         const state = createOAuthState(clientSecret);
         const location = buildAuthorizeUrl(REDIRECT_URI, state);
+        const stateCookie = [
+          `${STATE_COOKIE}=${encodeURIComponent(state)}`,
+          "Path=/",
+          "Max-Age=600",
+          "HttpOnly",
+          "Secure",
+          "SameSite=Lax",
+        ].join("; ");
 
         return new Response(null, {
           status: 302,
           headers: {
             location,
+            "set-cookie": stateCookie,
             "cache-control": "no-store",
           },
         });
