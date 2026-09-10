@@ -40,6 +40,7 @@ bot = core_globals["bot"]
 main = core_globals["main"]
 
 import discord
+from discord.ext import commands
 
 
 def _managed(member: discord.Member, guild: discord.Guild) -> bool:
@@ -131,20 +132,17 @@ async def send_verify_flow(ctx_or_interaction):
     member = ctx_or_interaction.author if hasattr(ctx_or_interaction, "author") else ctx_or_interaction.user
     if guild is None:
         target = ctx_or_interaction
+        msg = "Run `rm!verify` inside the server you want to manage."
         if isinstance(target, discord.Interaction):
-            return await target.response.send_message(
-                "Run `rm!verify` inside the server you want to manage.", ephemeral=True
-            )
-        return await target.send("Run `rm!verify` inside the server you want to manage.")
+            return await target.response.send_message(msg, ephemeral=True)
+        return await target.send(msg)
     if not isinstance(member, discord.Member) or not _managed(member, guild):
         msg = "You need Administrator or Manage Server to verify this server."
         if isinstance(ctx_or_interaction, discord.Interaction):
             return await ctx_or_interaction.response.send_message(msg, ephemeral=True)
         return await ctx_or_interaction.send(msg)
-
     if isinstance(ctx_or_interaction, discord.Interaction):
         return await ctx_or_interaction.response.send_modal(VerifyEmailModal())
-
     try:
         url = await create_verify_link(member, guild)
         view = discord.ui.View(timeout=300)
@@ -179,9 +177,6 @@ async def verify(interaction: discord.Interaction):
     await send_verify_flow(interaction)
 
 
-# Extra useful shortcut commands. These intentionally use existing bot state and
-# do not require new services or external APIs.
-
 @bot.command(name="dashboard", aliases=["panel"])
 async def dashboard(ctx: commands.Context):
     await ctx.reply(f"RM Dashboard: {DASHBOARD_URL}", mention_author=False)
@@ -205,11 +200,7 @@ async def serverinfo(ctx: commands.Context):
 @bot.command(name="botinfo", aliases=["about"])
 async def botinfo(ctx: commands.Context):
     version = core_globals.get("VERSION", "2.0.0")
-    e = discord.Embed(
-        title="RM",
-        description="Security, moderation and server management.",
-        color=0xEF4444,
-    )
+    e = discord.Embed(title="RM", description="Security, moderation and server management.", color=0xEF4444)
     e.add_field(name="Version", value=version)
     e.add_field(name="Servers", value=str(len(bot.guilds)))
     e.add_field(name="Latency", value=f"{round(bot.latency * 1000)}ms")
