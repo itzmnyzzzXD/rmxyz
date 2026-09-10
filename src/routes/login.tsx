@@ -11,8 +11,17 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+const ERROR_MESSAGES: Record<string, string> = {
+  state: "The login session expired or the OAuth state was missing. Start Discord login again.",
+  missing_code: "Discord did not return an authorization code. Start Discord login again.",
+  session_config: "The dashboard session secret is not configured on Vercel.",
+  access_denied: "Discord authorization was cancelled.",
+  oauth: "Discord authorization could not be completed. Check the OAuth redirect and server configuration.",
+};
+
 function LoginPage() {
   const error = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("error");
+  const message = error ? ERROR_MESSAGES[error] ?? "Discord rejected the sign-in request." : null;
 
   return (
     <main className="min-h-screen bg-[#09090b] px-4 py-8 text-white sm:px-6">
@@ -32,14 +41,12 @@ function LoginPage() {
             Connect your Discord account to securely access the servers you own or can manage.
           </p>
 
-          {error && (
+          {message && (
             <div className="mt-6 flex gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
               <div>
                 <p className="font-medium">Discord sign-in failed</p>
-                <p className="mt-1 text-amber-100/70">
-                  {error === "state" ? "The login session expired. Start the Discord login again." : "Discord rejected the sign-in request. Check the OAuth redirect and application credentials."}
-                </p>
+                <p className="mt-1 text-amber-100/70">{message}</p>
               </div>
             </div>
           )}
