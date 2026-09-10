@@ -24,10 +24,21 @@ export const Route = createFileRoute("/api/auth/discord/login")({
         const session = await getRMSession();
         await session.update({ oauthState: state });
 
+        const location = buildAuthorizeUrl(REDIRECT_URI, state);
+        const cookie = [
+          `rm_oauth_state=${encodeURIComponent(state)}`,
+          "Path=/",
+          "Max-Age=600",
+          "HttpOnly",
+          "Secure",
+          "SameSite=Lax",
+        ].join("; ");
+
         return new Response(null, {
           status: 302,
           headers: {
-            location: buildAuthorizeUrl(REDIRECT_URI, state),
+            location,
+            "set-cookie": cookie,
             "cache-control": "no-store",
           },
         });
