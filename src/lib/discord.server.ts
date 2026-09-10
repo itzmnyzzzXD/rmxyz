@@ -42,13 +42,22 @@ export function isDiscordConfigured() {
   return Boolean(clientId && clientSecret);
 }
 
+// Keep this in one place so the website login and Discord Developer Portal stay in sync.
+export const DISCORD_OAUTH_SCOPES = [
+  "guilds",
+  "identify",
+  "gdm.join",
+  "guilds.members.read",
+  "guilds.join",
+] as const;
+
 export function buildAuthorizeUrl(redirectUri: string, state: string) {
   const { clientId } = discordConfig();
   const params = new URLSearchParams({
     client_id: clientId ?? "",
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "identify guilds",
+    scope: DISCORD_OAUTH_SCOPES.join(" "),
     state,
     prompt: "consent",
   });
