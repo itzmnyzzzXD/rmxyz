@@ -54,6 +54,11 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
           return redirect("/login?error=state");
         }
 
+        if (!process.env["SESSION_SECRET"]) {
+          console.error("SESSION_SECRET is not configured on the dashboard");
+          return redirect("/login?error=session_config");
+        }
+
         try {
           const token = await exchangeCode(code, REDIRECT_URI);
           const user = await fetchCurrentUser(token.access_token);
@@ -67,7 +72,6 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
             accessToken: token.access_token,
             refreshToken: token.refresh_token,
             expiresAt: Date.now() + token.expires_in * 1000,
-            oauthState: undefined,
           });
 
           return redirect("/servers");
