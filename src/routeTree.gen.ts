@@ -13,8 +13,6 @@ import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ServersRouteImport } from './routes/servers'
 import { Route as DashboardGuildIdRouteImport } from './routes/dashboard/$guildId'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
-import { Route as ApiAuthDiscordOauthCallbackRouteImport } from './routes/api/auth/discord/oauth-callback'
-import { Route as ApiAuthDiscordLoginRouteImport } from './routes/api/auth/discord/login'
 import { Route as ApiAuthLocalLoginRouteImport } from './routes/api/auth/local-login'
 import { Route as ApiAuthPasskeyOptionsRouteImport } from './routes/api/auth/passkey/options'
 import { Route as ApiAuthPasskeyVerifyRouteImport } from './routes/api/auth/passkey/verify'
@@ -31,8 +29,6 @@ const VerifyRoute = VerifyRouteImport.update({ id: '/verify', path: '/verify', g
 const ServersRoute = ServersRouteImport.update({ id: '/servers', path: '/servers', getParentRoute: () => rootRouteImport } as any)
 const DashboardGuildIdRoute = DashboardGuildIdRouteImport.update({ id: '/dashboard/$guildId', path: '/dashboard/$guildId', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({ id: '/api/auth/logout', path: '/api/auth/logout', getParentRoute: () => rootRouteImport } as any)
-const ApiAuthDiscordOauthCallbackRoute = ApiAuthDiscordOauthCallbackRouteImport.update({ id: '/api/auth/discord/oauth-callback', path: '/api/auth/discord/oauth-callback', getParentRoute: () => rootRouteImport } as any)
-const ApiAuthDiscordLoginRoute = ApiAuthDiscordLoginRouteImport.update({ id: '/api/auth/discord/login', path: '/api/auth/discord/login', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthLocalLoginRoute = ApiAuthLocalLoginRouteImport.update({ id: '/api/auth/local-login', path: '/api/auth/local-login', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthPasskeyOptionsRoute = ApiAuthPasskeyOptionsRouteImport.update({ id: '/api/auth/passkey/options', path: '/api/auth/passkey/options', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthPasskeyVerifyRoute = ApiAuthPasskeyVerifyRouteImport.update({ id: '/api/auth/passkey/verify', path: '/api/auth/passkey/verify', getParentRoute: () => rootRouteImport } as any)
@@ -50,8 +46,6 @@ export interface FileRoutesByFullPath {
   '/servers': typeof ServersRoute
   '/dashboard/$guildId': typeof DashboardGuildIdRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
-  '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
   '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
   '/api/auth/passkey/options': typeof ApiAuthPasskeyOptionsRoute
   '/api/auth/passkey/verify': typeof ApiAuthPasskeyVerifyRoute
@@ -71,8 +65,6 @@ export interface FileRoutesById {
   '/servers': typeof ServersRoute
   '/dashboard/$guildId': typeof DashboardGuildIdRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
-  '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
   '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
   '/api/auth/passkey/options': typeof ApiAuthPasskeyOptionsRoute
   '/api/auth/passkey/verify': typeof ApiAuthPasskeyVerifyRoute
@@ -97,8 +89,6 @@ export interface RootRouteChildren {
   ServersRoute: typeof ServersRoute
   DashboardGuildIdRoute: typeof DashboardGuildIdRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
-  ApiAuthDiscordOauthCallbackRoute: typeof ApiAuthDiscordOauthCallbackRoute
-  ApiAuthDiscordLoginRoute: typeof ApiAuthDiscordLoginRoute
   ApiAuthLocalLoginRoute: typeof ApiAuthLocalLoginRoute
   ApiAuthPasskeyOptionsRoute: typeof ApiAuthPasskeyOptionsRoute
   ApiAuthPasskeyVerifyRoute: typeof ApiAuthPasskeyVerifyRoute
@@ -118,8 +108,6 @@ declare module '@tanstack/react-router' {
     '/servers': { id: '/servers'; path: '/servers'; fullPath: '/servers'; preLoaderRoute: typeof ServersRouteImport; parentRoute: typeof rootRouteImport }
     '/dashboard/$guildId': { id: '/dashboard/$guildId'; path: '/dashboard/$guildId'; fullPath: '/dashboard/$guildId'; preLoaderRoute: typeof DashboardGuildIdRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/logout': { id: '/api/auth/logout'; path: '/api/auth/logout'; fullPath: '/api/auth/logout'; preLoaderRoute: typeof ApiAuthLogoutRouteImport; parentRoute: typeof rootRouteImport }
-    '/api/auth/discord/oauth-callback': { id: '/api/auth/discord/oauth-callback'; path: '/api/auth/discord/oauth-callback'; fullPath: '/api/auth/discord/oauth-callback'; preLoaderRoute: typeof ApiAuthDiscordOauthCallbackRouteImport; parentRoute: typeof rootRouteImport }
-    '/api/auth/discord/login': { id: '/api/auth/discord/login'; path: '/api/auth/discord/login'; fullPath: '/api/auth/discord/login'; preLoaderRoute: typeof ApiAuthDiscordLoginRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/local-login': { id: '/api/auth/local-login'; path: '/api/auth/local-login'; fullPath: '/api/auth/local-login'; preLoaderRoute: typeof ApiAuthLocalLoginRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/passkey/options': { id: '/api/auth/passkey/options'; path: '/api/auth/passkey/options'; fullPath: '/api/auth/passkey/options'; preLoaderRoute: typeof ApiAuthPasskeyOptionsRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/passkey/verify': { id: '/api/auth/passkey/verify'; path: '/api/auth/passkey/verify'; fullPath: '/api/auth/passkey/verify'; preLoaderRoute: typeof ApiAuthPasskeyVerifyRouteImport; parentRoute: typeof rootRouteImport }
@@ -139,8 +127,6 @@ const rootRouteChildren: RootRouteChildren = {
   ServersRoute,
   DashboardGuildIdRoute,
   ApiAuthLogoutRoute,
-  ApiAuthDiscordOauthCallbackRoute,
-  ApiAuthDiscordLoginRoute,
   ApiAuthLocalLoginRoute,
   ApiAuthPasskeyOptionsRoute,
   ApiAuthPasskeyVerifyRoute,
