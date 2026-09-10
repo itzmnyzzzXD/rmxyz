@@ -3,11 +3,26 @@ import { exchangeCode, fetchCurrentUser } from "@/lib/discord.server";
 import { getRMSession } from "@/lib/session.server";
 
 const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
+const STATE_COOKIE = "__Host-rm_oauth_state";
 
 function getCookie(request: Request, name: string) {
   const header = request.headers.get("cookie") ?? "";
   const match = header.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+function redirect(location: string, clearState = true) {
+  const headers = new Headers({
+    location,
+    "cache-control": "no-store, no-cache, must-revalidate",
+  });
+  if (clearState) {
+    headers.append(
+      "set-cookie",
+      `${STATE_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
+    );
+  }
+  return new Response(null, { status: 302, headers });
 }
 
 export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
@@ -18,23 +33,7 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
         const code = url.searchParams.get("code");
         const returnedState = url.searchParams.get("state");
         const error = url.searchParams.get("error");
-        const session = await getRMSession();
-        const cookieState = getCookie(request, "rm_oauth_state");
-        const expectedState = cookieState ?? session.data.oauthState;
-
-        const redirect = (location: string, clearState = true) => {
-          const headers = new Headers({
-            location,
-            "cache-control": "no-store, no-cache, must-revalidate",
-          });
-          if (clearState) {
-            headers.append(
-              "set-cookie",
-              "rm_oauth_state=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax",
-            );
-          }
-          return new Response(null, { status: 302, headers });
-        };
+        const cookieState = getCookie(request, STATE_COOKIE);
 
         if (error) {
           console.error(
@@ -45,17 +44,12 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
           return redirect(`/login?error=${encodeURIComponent(error)}`);
         }
 
-        if (!code) {
-          return redirect("/login?error=missing_code");
-        }
+        if (!code) return redirect("/login?error=missing_code");
 
-        // Discord returns the state value to the exact redirect URI. Validate it
-        // against both the short-lived browser cookie and the server session.
-        if (!returnedState || !expectedState || returnedState !== expectedState) {
+        if (!returnedState || !cookieState || returnedState !== cookieState) {
           console.error("Discord OAuth state validation failed", {
             hasReturnedState: Boolean(returnedState),
             hasCookieState: Boolean(cookieState),
-            hasSessionState: Boolean(session.data.oauthState),
           });
           return redirect("/login?error=state");
         }
@@ -63,6 +57,7 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
         try {
           const token = await exchangeCode(code, REDIRECT_URI);
           const user = await fetchCurrentUser(token.access_token);
+          const session = await getRMSession();
 
           await session.update({
             userId: user.id,
