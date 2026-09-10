@@ -29,7 +29,7 @@ function LoginPage() {
 
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">Sign in to RM</h1>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
-            Connect your Discord account to see the servers you own or can manage.
+            Connect your Discord account to securely access the servers you own or can manage.
           </p>
 
           {error && (
@@ -52,9 +52,15 @@ function LoginPage() {
             Continue with Discord
           </a>
 
-          <p className="mt-5 text-center text-xs leading-5 text-zinc-500">
-            RM only requests your Discord identity and server list. It uses your server permissions to determine which communities you can manage.
-          </p>
+          <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
+              <ShieldCheck className="h-4 w-4 text-red-400" />
+              Secure Discord authorization
+            </div>
+            <p className="mt-2 text-xs leading-5 text-zinc-500">
+              RM uses Discord OAuth2 for your identity and server access. After authorization, Discord sends you back to RM and the dashboard continues automatically.
+            </p>
+          </div>
         </div>
       </div>
     </main>
