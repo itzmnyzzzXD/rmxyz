@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { buildAuthorizeUrl, discordConfig, isDiscordConfigured } from "@/lib/discord.server";
 import { getRMSession } from "@/lib/session.server";
 
-const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/callback";
+const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
 
 export const Route = createFileRoute("/api/auth/discord/login")({
   server: {
