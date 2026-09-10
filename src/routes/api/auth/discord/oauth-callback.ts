@@ -4,15 +4,27 @@ import { exchangeCode, fetchCurrentUser, discordConfig } from "@/lib/discord.ser
 import { getRMSession } from "@/lib/session.server";
 
 const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
+const STATE_COOKIE = "__Host-rm_oauth_state";
 
-function redirect(location: string) {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      location,
-      "cache-control": "no-store, no-cache, must-revalidate",
-    },
+function getCookie(request: Request, name: string) {
+  const header = request.headers.get("cookie") ?? "";
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = header.match(new RegExp(`(?:^|;\\s*)${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function redirect(location: string, clearState = true) {
+  const headers = new Headers({
+    location,
+    "cache-control": "no-store, no-cache, must-revalidate",
   });
+  if (clearState) {
+    headers.append(
+      "set-cookie",
+      `${STATE_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
+    );
+  }
+  return new Response(null, { status: 302, headers });
 }
 
 function verifyState(state: string, secret: string) {
@@ -28,9 +40,7 @@ function verifyState(state: string, secret: string) {
   const a = Buffer.from(suppliedSignature);
   const b = Buffer.from(expectedSignature);
   if (a.length !== b.length) return false;
-
-  let valid = timingSafeEqual(a, b);
-  if (!valid) return false;
+  if (!timingSafeEqual(a, b)) return false;
 
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as {
@@ -40,8 +50,7 @@ function verifyState(state: string, secret: string) {
     if (!payload.nonce || typeof payload.issuedAt !== "number") return false;
 
     const age = Date.now() - payload.issuedAt;
-    valid = age >= -60_000 && age <= 10 * 60_000;
-    return valid;
+    return age >= -60_000 && age <= 10 * 60_000;
   } catch {
     return false;
   }
@@ -55,6 +64,7 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
         const code = url.searchParams.get("code");
         const returnedState = url.searchParams.get("state");
         const error = url.searchParams.get("error");
+        const cookieState = getCookie(request, STATE_COOKIE);
 
         if (error) {
           console.error(
@@ -73,13 +83,14 @@ export const Route = createFileRoute("/api/auth/discord/oauth-callback")({
           return redirect("/login?error=oauth_config");
         }
 
-        if (!returnedState) {
-          console.error("Discord OAuth callback did not include state");
-          return redirect("/login?error=state");
-        }
-
-        if (!verifyState(returnedState, clientSecret)) {
-          console.error("Discord OAuth signed state validation failed");
+        // Prefer Discord's returned state. If it is absent, fall back to the
+        // same signed state saved by our own first-party secure cookie.
+        const stateToVerify = returnedState || cookieState;
+        if (!stateToVerify || !verifyState(stateToVerify, clientSecret)) {
+          console.error("Discord OAuth state validation failed", {
+            hasReturnedState: Boolean(returnedState),
+            hasCookieState: Boolean(cookieState),
+          });
           return redirect("/login?error=state");
         }
 
