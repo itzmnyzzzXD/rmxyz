@@ -10,7 +10,13 @@ const payloadSchema = z.object({
 const str = (v: unknown, fallback = "") => (v == null ? fallback : String(v));
 const num = (v: unknown, fallback = 0) => (v == null ? fallback : Number(v));
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
 
 function timingSafeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;
@@ -23,15 +29,19 @@ export const Route = createFileRoute("/api/public/bot/sync")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const provided = request.headers.get("x-bot-key") ?? "";
-        const configuredKey = process.env["BOT_SYNC_KEY"] ?? process.env["BOT_API_KEY"] ?? "";
-        const botToken = process.env["DISCORD_BOT_TOKEN"] ?? "";
-        const derivedKey = botToken ? await crypto.subtle.digest("SHA-256", new TextEncoder().encode(botToken)).then((buf) => Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("")) : "";
+        const configuredKey = (
+          process.env["BOT_SYNC_KEY"] ?? process.env["BOT_API_KEY"] ?? ""
+        ).trim();
+        const provided = (request.headers.get("x-bot-key") ?? "").trim();
 
-        const authorized = Boolean(provided) &&
-          ((Boolean(configuredKey) && timingSafeEqual(provided, configuredKey)) ||
-           (Boolean(derivedKey) && timingSafeEqual(provided, derivedKey)));
-        if (!authorized) return json({ error: "unauthorized" }, 401);
+        if (!configuredKey) {
+          console.error("BOT_SYNC_KEY is not configured on the dashboard");
+          return json({ error: "bot sync is not configured" }, 503);
+        }
+
+        if (!provided || !timingSafeEqual(provided, configuredKey)) {
+          return json({ error: "unauthorized" }, 401);
+        }
 
         let body: unknown;
         try {
@@ -39,6 +49,7 @@ export const Route = createFileRoute("/api/public/bot/sync")({
         } catch {
           return json({ error: "invalid json" }, 400);
         }
+
         const parsed = payloadSchema.safeParse(body);
         if (!parsed.success) return json({ error: "invalid payload" }, 400);
         const { action, data } = parsed.data;
