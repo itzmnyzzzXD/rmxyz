@@ -1,20 +1,37 @@
-/** Dashboard server functions backed by the local server-side store. */
+/** Dashboard server functions for local verified accounts and legacy Discord OAuth sessions. */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRMSession } from "@/lib/session.server";
 import { avatarUrl, botOwnerIds, canManageGuild, fetchBotGuild, fetchBotGuildChannels, fetchUserGuilds, guildIconUrl, isDiscordConfigured, refreshAccessToken } from "@/lib/discord.server";
 import { DEFAULTS } from "@/lib/rm/modules";
 import { queueTask, store, upsertGuild, type JsonValue } from "@/lib/rm/store.server";
+import { getLocalUserFromSession } from "@/lib/local-auth.server";
 
 export type SessionUser = { id: string; name: string; avatar: string; isOwner: boolean } | null;
 export type ManageableGuild = { id: string; name: string; icon: string | null; botPresent: boolean; memberCount: number };
 
-async function requireUser() {
-  const session = await getRMSession();
-  let { userId, accessToken, refreshToken } = session.data;
-  if (!userId || !accessToken) throw new Error("NOT_SIGNED_IN");
+type AuthContext = {
+  userId: string;
+  accessToken?: string;
+  local: boolean;
+  managedGuildIds: string[];
+  data: Awaited<ReturnType<typeof getRMSession>>["data"];
+};
 
-  const expiresSoon = !session.data.expiresAt || session.data.expiresAt <= Date.now() + 60_000;
+async function requireUser(): Promise<AuthContext> {
+  const session = await getRMSession();
+  const data = session.data;
+  if (!data.userId) throw new Error("NOT_SIGNED_IN");
+
+  if (data.authProvider === "local") {
+    const user = await getLocalUserFromSession();
+    if (!user || user.id !== data.userId) throw new Error("NOT_SIGNED_IN");
+    return { userId: user.id, local: true, managedGuildIds: user.managedGuildIds, data };
+  }
+
+  let { accessToken, refreshToken } = data;
+  if (!accessToken) throw new Error("NOT_SIGNED_IN");
+  const expiresSoon = !data.expiresAt || data.expiresAt <= Date.now() + 60_000;
   if (expiresSoon && refreshToken) {
     try {
       const refreshed = await refreshAccessToken(refreshToken);
@@ -24,37 +41,51 @@ async function requireUser() {
       throw new Error("DISCORD_SESSION_EXPIRED");
     }
   }
-  return { userId, accessToken, data: session.data };
+  return { userId: data.userId, accessToken, local: false, managedGuildIds: data.managedGuildIds ?? [], data: session.data };
 }
 
 async function requireGuildAccess(guildId: string) {
-  const { userId, accessToken } = await requireUser();
-  if (botOwnerIds().includes(userId)) return { userId };
-  const guilds = await fetchUserGuilds(accessToken);
+  const auth = await requireUser();
+  if (botOwnerIds().includes(auth.userId)) return { userId: auth.userId };
+  if (auth.local) {
+    if (!auth.managedGuildIds.includes(guildId)) throw new Error("NO_ACCESS");
+    return { userId: auth.userId };
+  }
+  const guilds = await fetchUserGuilds(auth.accessToken!);
   const guild = guilds.find((g) => g.id === guildId);
   if (!guild || !canManageGuild(guild)) throw new Error("NO_ACCESS");
-  return { userId };
+  return { userId: auth.userId };
+}
+
+function sessionAvatar(id: string, avatar?: string | null) {
+  if (avatar?.startsWith("http://") || avatar?.startsWith("https://")) return avatar;
+  return avatarUrl(id, avatar ?? null);
 }
 
 export const getSessionUser = createServerFn({ method: "GET" }).handler(async (): Promise<SessionUser> => {
   const session = await getRMSession();
   const { userId, username, globalName, avatar } = session.data;
   if (!userId) return null;
-  return { id: userId, name: globalName || username || "Discord user", avatar: avatarUrl(userId, avatar ?? null), isOwner: botOwnerIds().includes(userId) };
+  return { id: userId, name: globalName || username || "RM user", avatar: sessionAvatar(userId, avatar), isOwner: botOwnerIds().includes(session.data.discordId ?? userId) };
 });
 
-export const getAuthState = createServerFn({ method: "GET" }).handler(async () => ({ configured: isDiscordConfigured() }));
+export const getAuthState = createServerFn({ method: "GET" }).handler(async () => ({ configured: true }));
 
 export const listManageableGuilds = createServerFn({ method: "GET" }).handler(async (): Promise<ManageableGuild[]> => {
-  const { accessToken } = await requireUser();
-  const guilds = (await fetchUserGuilds(accessToken)).filter(canManageGuild);
+  const auth = await requireUser();
+  let guilds: { id: string; name: string; icon: string | null }[];
+  if (auth.local) {
+    guilds = auth.managedGuildIds.map((id) => ({ id, name: `Server ${id}`, icon: null }));
+  } else {
+    guilds = (await fetchUserGuilds(auth.accessToken!)).filter(canManageGuild).map((g) => ({ id: g.id, name: g.name, icon: g.icon }));
+  }
   const rows = await Promise.all(guilds.map(async (g) => {
     const known = store.guilds.get(g.id);
     const botGuild = await fetchBotGuild(g.id);
     return {
       id: g.id,
-      name: g.name,
-      icon: guildIconUrl(g.id, g.icon),
+      name: botGuild?.name ?? g.name,
+      icon: botGuild ? guildIconUrl(botGuild.id, botGuild.icon) : guildIconUrl(g.id, g.icon),
       botPresent: Boolean(botGuild || known?.botPresent),
       memberCount: botGuild?.approximate_member_count ?? known?.memberCount ?? 0,
     };
