@@ -2,7 +2,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRMSession } from "@/lib/session.server";
-import { avatarUrl, botOwnerIds, canManageGuild, fetchBotGuildChannels, fetchUserGuilds, guildIconUrl, isDiscordConfigured } from "@/lib/discord.server";
+import { avatarUrl, botOwnerIds, canManageGuild, fetchBotGuildChannels, fetchUserGuilds, guildIconUrl, isDiscordConfigured, refreshAccessToken } from "@/lib/discord.server";
 import { DEFAULTS } from "@/lib/rm/modules";
 import { queueTask, store, upsertGuild, type JsonValue } from "@/lib/rm/store.server";
 
@@ -11,8 +11,24 @@ export type ManageableGuild = { id: string; name: string; icon: string | null; b
 
 async function requireUser() {
   const session = await getRMSession();
-  const { userId, accessToken } = session.data;
+  let { userId, accessToken, refreshToken } = session.data;
   if (!userId || !accessToken) throw new Error("NOT_SIGNED_IN");
+
+  const expiresSoon = !session.data.expiresAt || session.data.expiresAt <= Date.now() + 60_000;
+  if (expiresSoon && refreshToken) {
+    try {
+      const refreshed = await refreshAccessToken(refreshToken);
+      accessToken = refreshed.access_token;
+      await session.update({
+        accessToken,
+        refreshToken: refreshed.refresh_token ?? refreshToken,
+        expiresAt: Date.now() + refreshed.expires_in * 1000,
+      });
+    } catch {
+      throw new Error("DISCORD_SESSION_EXPIRED");
+    }
+  }
+
   return { userId, accessToken, data: session.data };
 }
 
@@ -75,7 +91,7 @@ export const getGuildConfig = createServerFn({ method: "POST" }).inputValidator(
 export const saveGuildConfig = createServerFn({ method: "POST" }).inputValidator((input: { guildId: string; module: string; enabled: boolean; settings: Record<string, JsonValue> }) => z.object({ guildId: z.string().min(5), module: z.string().min(2), enabled: z.boolean(), settings: z.record(z.string(), z.custom<JsonValue>()) }).parse(input)).handler(async ({ data }) => {
   const { userId } = await requireGuildAccess(data.guildId);
   if (!(data.module in DEFAULTS)) throw new Error("Unknown module");
-  upsertGuild({ id: data.guildId, name: data.guildId, botPresent: true });
+  upsertGuild({ id: data.guildId });
   store.configs.set(`${data.guildId}:${data.module}`, { enabled: data.enabled, settings: data.settings });
   queueTask({ guildId: data.guildId, taskType: "reload_config", payload: { module: data.module, enabled: data.enabled, settings: data.settings }, requestedBy: userId });
   return { ok: true };
