@@ -1,75 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, LogIn, ShieldCheck } from "lucide-react";
+import { ArrowLeft, KeyRound, LogIn, Mail, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — RM" },
-      { name: "description", content: "Sign in to manage your Discord servers with RM." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Sign in — RM" }, { name: "description", content: "Sign in to the RM dashboard." }] }),
   component: LoginPage,
 });
 
-const ERROR_MESSAGES: Record<string, string> = {
-  state: "The login session expired or the OAuth state was missing. Start Discord login again.",
-  missing_code: "Discord did not return an authorization code. Start Discord login again.",
-  session_config: "The dashboard session secret is not configured on Vercel.",
-  access_denied: "Discord authorization was cancelled.",
-  oauth: "Discord authorization could not be completed. Check the OAuth redirect and server configuration.",
-};
-
 function LoginPage() {
-  const error = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("error");
-  const message = error ? ERROR_MESSAGES[error] ?? "Discord rejected the sign-in request." : null;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  return (
-    <main className="min-h-screen bg-[#09090b] px-4 py-8 text-white sm:px-6">
-      <div className="mx-auto flex min-h-[85vh] max-w-lg items-center justify-center">
-        <div className="w-full rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white">
-            <ArrowLeft className="h-4 w-4" />
-            Back home
-          </Link>
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/local-login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "login_failed");
+      window.location.href = "/servers";
+    } catch (e) {
+      setError(e instanceof Error && e.message === "invalid_credentials" ? "Email or password is incorrect." : "Sign-in is temporarily unavailable.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
-          <div className="mt-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/15 ring-1 ring-red-500/20">
-            <ShieldCheck className="h-7 w-7 text-red-400" />
-          </div>
-
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight">Sign in to RM</h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-400">
-            Connect your Discord account to securely access the servers you own or can manage.
-          </p>
-
-          {message && (
-            <div className="mt-6 flex gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-              <div>
-                <p className="font-medium">Discord sign-in failed</p>
-                <p className="mt-1 text-amber-100/70">{message}</p>
-              </div>
-            </div>
-          )}
-
-          <a
-            href="/api/auth/discord/login"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-red-950/30 transition hover:bg-red-400 active:scale-[0.99]"
-          >
-            <LogIn className="h-4 w-4" />
-            Continue with Discord
-          </a>
-
-          <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
-              <ShieldCheck className="h-4 w-4 text-red-400" />
-              Secure Discord authorization
-            </div>
-            <p className="mt-2 text-xs leading-5 text-zinc-500">
-              RM uses Discord OAuth2 for your identity and server access. After authorization, Discord sends you back to RM and the dashboard continues automatically.
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+  return <main className="min-h-screen overflow-hidden bg-[#07070a] px-4 py-8 text-white sm:px-6"><div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(239,68,68,.12),transparent_32%),radial-gradient(circle_at_85%_85%,rgba(90,30,30,.1),transparent_30%)]" /><div className="relative mx-auto flex min-h-[88vh] max-w-lg items-center justify-center"><div className="w-full rounded-[30px] border border-white/10 bg-white/[0.045] p-6 shadow-[0_30px_120px_-55px_rgba(239,68,68,.4)] backdrop-blur-2xl sm:p-8"><Link to="/" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white"><ArrowLeft className="h-4 w-4" />Back home</Link><div className="mt-8"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-red-500/10 ring-1 ring-red-400/20"><ShieldCheck className="h-7 w-7 text-red-300" /></div><h1 className="mt-6 text-3xl font-black tracking-tight">Welcome back</h1><p className="mt-2 text-sm leading-6 text-zinc-400">Sign in with the RM account you created through Discord verification.</p></div><form onSubmit={submit} className="mt-7 space-y-5"><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-[.18em] text-zinc-500">Email</span><div className="relative"><Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" /><input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-2xl border border-white/10 bg-black/20 py-3.5 pl-11 pr-4 text-sm outline-none transition placeholder:text-zinc-700 focus:border-red-400/40" /></div></label><label className="block"><span className="mb-2 block text-xs font-bold uppercase tracking-[.18em] text-zinc-500">Password</span><div className="relative"><KeyRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" /><input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Your password" className="w-full rounded-2xl border border-white/10 bg-black/20 py-3.5 pl-11 pr-4 text-sm outline-none transition placeholder:text-zinc-700 focus:border-red-400/40" /></div></label>{error && <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>}<button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3.5 text-sm font-black shadow-lg shadow-red-950/30 transition hover:bg-red-400 disabled:opacity-60"><LogIn className="h-4 w-4" />{busy ? "Signing in…" : "Sign in"}</button></form><div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4"><p className="text-xs leading-5 text-zinc-500">New here? Run <span className="font-mono text-zinc-300">/verify</span> in your Discord server to get your secure signup link.</p><Link to="/verify" className="mt-2 inline-block text-sm font-bold text-red-300 hover:text-red-200">Open verification page</Link></div></div></div></main>;
 }
