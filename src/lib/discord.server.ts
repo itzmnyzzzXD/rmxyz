@@ -76,6 +76,27 @@ export async function exchangeCode(code: string, redirectUri: string) {
   };
 }
 
+export async function refreshAccessToken(refreshToken: string) {
+  const { clientId, clientSecret } = discordConfig();
+  if (!clientId || !clientSecret || !refreshToken) throw new Error("Discord OAuth refresh is not configured");
+  const res = await fetch(`${DISCORD_API}/oauth2/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+  });
+  if (!res.ok) throw new Error(`Token refresh failed (${res.status})`);
+  return (await res.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    expires_in: number;
+  };
+}
+
 async function discordFetch<T>(path: string, token: string, bot = false): Promise<T> {
   const res = await fetch(`${DISCORD_API}${path}`, {
     headers: { authorization: `${bot ? "Bot" : "Bearer"} ${token}` },
