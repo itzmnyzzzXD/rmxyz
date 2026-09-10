@@ -1,8 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHmac, randomBytes } from "node:crypto";
 import { buildAuthorizeUrl, discordConfig, isDiscordConfigured } from "@/lib/discord.server";
 
 const REDIRECT_URI = "https://rmxyz.vercel.app/api/auth/discord/oauth-callback";
-const STATE_COOKIE = "__Host-rm_oauth_state";
+
+function signState(value: string, secret: string) {
+  return createHmac("sha256", secret).update(value).digest("base64url");
+}
+
+function createOAuthState(secret: string) {
+  const payload = JSON.stringify({
+    nonce: randomBytes(32).toString("base64url"),
+    issuedAt: Date.now(),
+  });
+  const encoded = Buffer.from(payload, "utf8").toString("base64url");
+  return `${encoded}.${signState(encoded, secret)}`;
+}
 
 export const Route = createFileRoute("/api/auth/discord/login")({
   server: {
@@ -20,22 +33,21 @@ export const Route = createFileRoute("/api/auth/discord/login")({
           );
         }
 
-        const state = crypto.randomUUID();
+        const { clientSecret } = discordConfig();
+        if (!clientSecret) {
+          return new Response("Discord OAuth secret is not configured.", {
+            status: 503,
+            headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+          });
+        }
+
+        const state = createOAuthState(clientSecret);
         const location = buildAuthorizeUrl(REDIRECT_URI, state);
-        const cookie = [
-          `${STATE_COOKIE}=${encodeURIComponent(state)}`,
-          "Path=/",
-          "Max-Age=600",
-          "HttpOnly",
-          "Secure",
-          "SameSite=Lax",
-        ].join("; ");
 
         return new Response(null, {
           status: 302,
           headers: {
             location,
-            "set-cookie": cookie,
             "cache-control": "no-store",
           },
         });
