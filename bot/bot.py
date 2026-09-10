@@ -1,4 +1,9 @@
-"""RM VPS bootstrap + verified-account onboarding commands."""
+"""RM VPS bootstrap + verified-account onboarding command.
+
+The pinned RM core already owns the general command catalog. This wrapper only
+adds the verified-account onboarding flow so commands cannot collide with the
+core on startup.
+"""
 
 from __future__ import annotations
 
@@ -31,6 +36,7 @@ if not sync_key or sync_key == "PUT_YOUR_SYNC_KEY_HERE":
 os.environ["DASHBOARD_URL"] = DASHBOARD_URL
 os.environ["BOT_SYNC_KEY"] = sync_key
 
+# Load the stable RM core. Its own main() remains the single startup path.
 code = urllib.request.urlopen(PINNED_BOT_URL, timeout=20).read()
 core_globals = globals().copy()
 core_globals["__name__"] = "rm_bot_core"
@@ -146,7 +152,13 @@ async def send_verify_flow(ctx_or_interaction):
     try:
         url = await create_verify_link(member, guild)
         view = discord.ui.View(timeout=300)
-        view.add_item(discord.ui.Button(label="Open RM Verification", url=url, style=discord.ButtonStyle.link))
+        view.add_item(
+            discord.ui.Button(
+                label="Open RM Verification",
+                url=url,
+                style=discord.ButtonStyle.link,
+            )
+        )
         await ctx_or_interaction.reply(
             embed=discord.Embed(
                 title="RM Verification",
@@ -169,50 +181,13 @@ async def send_verify_flow(ctx_or_interaction):
 
 @bot.command(name="verify", aliases=["verifyaccount"])
 async def prefix_verify(ctx: commands.Context):
+    """Start RM verification with rm!verify or rm?verify."""
     await send_verify_flow(ctx)
 
 
 @bot.tree.command(name="verify", description="Create your secure RM Dashboard account")
 async def verify(interaction: discord.Interaction):
     await send_verify_flow(interaction)
-
-
-@bot.command(name="dashboard", aliases=["panel"])
-async def dashboard(ctx: commands.Context):
-    await ctx.reply(f"RM Dashboard: {DASHBOARD_URL}", mention_author=False)
-
-
-@bot.command(name="serverinfo", aliases=["server"])
-async def serverinfo(ctx: commands.Context):
-    if ctx.guild is None:
-        return await ctx.reply("Use this command inside a server.", mention_author=False)
-    g = ctx.guild
-    e = discord.Embed(title=g.name, color=0xEF4444)
-    e.add_field(name="Members", value=str(g.member_count or 0))
-    e.add_field(name="Channels", value=str(len(g.channels)))
-    e.add_field(name="Roles", value=str(len(g.roles)))
-    e.add_field(name="Owner", value=f"<@{g.owner_id}>" if g.owner_id else "Unknown")
-    if g.icon:
-        e.set_thumbnail(url=g.icon.url)
-    await ctx.reply(embed=e, mention_author=False)
-
-
-@bot.command(name="botinfo", aliases=["about"])
-async def botinfo(ctx: commands.Context):
-    version = core_globals.get("VERSION", "2.0.0")
-    e = discord.Embed(title="RM", description="Security, moderation and server management.", color=0xEF4444)
-    e.add_field(name="Version", value=version)
-    e.add_field(name="Servers", value=str(len(bot.guilds)))
-    e.add_field(name="Latency", value=f"{round(bot.latency * 1000)}ms")
-    e.add_field(name="Dashboard", value=DASHBOARD_URL, inline=False)
-    await ctx.reply(embed=e, mention_author=False)
-
-
-@bot.command(name="membercount", aliases=["members"])
-async def membercount(ctx: commands.Context):
-    if ctx.guild is None:
-        return await ctx.reply("Use this command inside a server.", mention_author=False)
-    await ctx.reply(f"**{ctx.guild.name}** has **{ctx.guild.member_count or 0:,}** members.", mention_author=False)
 
 
 if __name__ == "__main__":
