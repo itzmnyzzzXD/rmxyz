@@ -9,101 +9,119 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ServersRouteImport } from './routes/servers'
 import { Route as DashboardGuildIdRouteImport } from './routes/dashboard/$guildId'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthDiscordOauthCallbackRouteImport } from './routes/api/auth/discord/oauth-callback'
 import { Route as ApiAuthDiscordLoginRouteImport } from './routes/api/auth/discord/login'
+import { Route as ApiAuthLocalLoginRouteImport } from './routes/api/auth/local-login'
+import { Route as ApiVerifyRequestEmailRouteImport } from './routes/api/verify/request-email'
+import { Route as ApiVerifyConfirmRouteImport } from './routes/api/verify/confirm'
 import { Route as ApiPublicBotSyncRouteImport } from './routes/api/public/bot/sync'
+import { Route as ApiPublicVerifyStartRouteImport } from './routes/api/public/verify/start'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/', path: '/', getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login', path: '/login', getParentRoute: () => rootRouteImport,
-} as any)
-const ServersRoute = ServersRouteImport.update({
-  id: '/servers', path: '/servers', getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardGuildIdRoute = DashboardGuildIdRouteImport.update({
-  id: '/dashboard/$guildId', path: '/dashboard/$guildId', getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
-  id: '/api/auth/logout', path: '/api/auth/logout', getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthDiscordOauthCallbackRoute = ApiAuthDiscordOauthCallbackRouteImport.update({
-  id: '/api/auth/discord/oauth-callback', path: '/api/auth/discord/oauth-callback', getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthDiscordLoginRoute = ApiAuthDiscordLoginRouteImport.update({
-  id: '/api/auth/discord/login', path: '/api/auth/discord/login', getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicBotSyncRoute = ApiPublicBotSyncRouteImport.update({
-  id: '/api/public/bot/sync', path: '/api/public/bot/sync', getParentRoute: () => rootRouteImport,
-} as any)
+const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
+const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
+const VerifyRoute = VerifyRouteImport.update({ id: '/verify', path: '/verify', getParentRoute: () => rootRouteImport } as any)
+const ServersRoute = ServersRouteImport.update({ id: '/servers', path: '/servers', getParentRoute: () => rootRouteImport } as any)
+const DashboardGuildIdRoute = DashboardGuildIdRouteImport.update({ id: '/dashboard/$guildId', path: '/dashboard/$guildId', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({ id: '/api/auth/logout', path: '/api/auth/logout', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthDiscordOauthCallbackRoute = ApiAuthDiscordOauthCallbackRouteImport.update({ id: '/api/auth/discord/oauth-callback', path: '/api/auth/discord/oauth-callback', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthDiscordLoginRoute = ApiAuthDiscordLoginRouteImport.update({ id: '/api/auth/discord/login', path: '/api/auth/discord/login', getParentRoute: () => rootRouteImport } as any)
+const ApiAuthLocalLoginRoute = ApiAuthLocalLoginRouteImport.update({ id: '/api/auth/local-login', path: '/api/auth/local-login', getParentRoute: () => rootRouteImport } as any)
+const ApiVerifyRequestEmailRoute = ApiVerifyRequestEmailRouteImport.update({ id: '/api/verify/request-email', path: '/api/verify/request-email', getParentRoute: () => rootRouteImport } as any)
+const ApiVerifyConfirmRoute = ApiVerifyConfirmRouteImport.update({ id: '/api/verify/confirm', path: '/api/verify/confirm', getParentRoute: () => rootRouteImport } as any)
+const ApiPublicBotSyncRoute = ApiPublicBotSyncRouteImport.update({ id: '/api/public/bot/sync', path: '/api/public/bot/sync', getParentRoute: () => rootRouteImport } as any)
+const ApiPublicVerifyStartRoute = ApiPublicVerifyStartRouteImport.update({ id: '/api/public/verify/start', path: '/api/public/verify/start', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/verify': typeof VerifyRoute
   '/servers': typeof ServersRoute
   '/dashboard/$guildId': typeof DashboardGuildIdRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
+  '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
+  '/api/verify/request-email': typeof ApiVerifyRequestEmailRoute
+  '/api/verify/confirm': typeof ApiVerifyConfirmRoute
   '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
+  '/api/public/verify/start': typeof ApiPublicVerifyStartRoute
 }
 export interface FileRoutesByTo extends FileRoutesByFullPath {}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/verify': typeof VerifyRoute
   '/servers': typeof ServersRoute
   '/dashboard/$guildId': typeof DashboardGuildIdRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/discord/oauth-callback': typeof ApiAuthDiscordOauthCallbackRoute
   '/api/auth/discord/login': typeof ApiAuthDiscordLoginRoute
+  '/api/auth/local-login': typeof ApiAuthLocalLoginRoute
+  '/api/verify/request-email': typeof ApiVerifyRequestEmailRoute
+  '/api/verify/confirm': typeof ApiVerifyConfirmRoute
   '/api/public/bot/sync': typeof ApiPublicBotSyncRoute
+  '/api/public/verify/start': typeof ApiPublicVerifyStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: keyof FileRoutesByFullPath
   fileRoutesByTo: FileRoutesByTo
-  to: keyof FileRoutesByTo
   id: keyof FileRoutesById
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  VerifyRoute: typeof VerifyRoute
   ServersRoute: typeof ServersRoute
   DashboardGuildIdRoute: typeof DashboardGuildIdRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthDiscordOauthCallbackRoute: typeof ApiAuthDiscordOauthCallbackRoute
   ApiAuthDiscordLoginRoute: typeof ApiAuthDiscordLoginRoute
+  ApiAuthLocalLoginRoute: typeof ApiAuthLocalLoginRoute
+  ApiVerifyRequestEmailRoute: typeof ApiVerifyRequestEmailRoute
+  ApiVerifyConfirmRoute: typeof ApiVerifyConfirmRoute
   ApiPublicBotSyncRoute: typeof ApiPublicBotSyncRoute
+  ApiPublicVerifyStartRoute: typeof ApiPublicVerifyStartRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
     '/login': { id: '/login'; path: '/login'; fullPath: '/login'; preLoaderRoute: typeof LoginRouteImport; parentRoute: typeof rootRouteImport }
+    '/verify': { id: '/verify'; path: '/verify'; fullPath: '/verify'; preLoaderRoute: typeof VerifyRouteImport; parentRoute: typeof rootRouteImport }
     '/servers': { id: '/servers'; path: '/servers'; fullPath: '/servers'; preLoaderRoute: typeof ServersRouteImport; parentRoute: typeof rootRouteImport }
     '/dashboard/$guildId': { id: '/dashboard/$guildId'; path: '/dashboard/$guildId'; fullPath: '/dashboard/$guildId'; preLoaderRoute: typeof DashboardGuildIdRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/logout': { id: '/api/auth/logout'; path: '/api/auth/logout'; fullPath: '/api/auth/logout'; preLoaderRoute: typeof ApiAuthLogoutRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/discord/oauth-callback': { id: '/api/auth/discord/oauth-callback'; path: '/api/auth/discord/oauth-callback'; fullPath: '/api/auth/discord/oauth-callback'; preLoaderRoute: typeof ApiAuthDiscordOauthCallbackRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/discord/login': { id: '/api/auth/discord/login'; path: '/api/auth/discord/login'; fullPath: '/api/auth/discord/login'; preLoaderRoute: typeof ApiAuthDiscordLoginRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/auth/local-login': { id: '/api/auth/local-login'; path: '/api/auth/local-login'; fullPath: '/api/auth/local-login'; preLoaderRoute: typeof ApiAuthLocalLoginRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/verify/request-email': { id: '/api/verify/request-email'; path: '/api/verify/request-email'; fullPath: '/api/verify/request-email'; preLoaderRoute: typeof ApiVerifyRequestEmailRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/verify/confirm': { id: '/api/verify/confirm'; path: '/api/verify/confirm'; fullPath: '/api/verify/confirm'; preLoaderRoute: typeof ApiVerifyConfirmRouteImport; parentRoute: typeof rootRouteImport }
     '/api/public/bot/sync': { id: '/api/public/bot/sync'; path: '/api/public/bot/sync'; fullPath: '/api/public/bot/sync'; preLoaderRoute: typeof ApiPublicBotSyncRouteImport; parentRoute: typeof rootRouteImport }
+    '/api/public/verify/start': { id: '/api/public/verify/start'; path: '/api/public/verify/start'; fullPath: '/api/public/verify/start'; preLoaderRoute: typeof ApiPublicVerifyStartRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute,
   LoginRoute,
+  VerifyRoute,
   ServersRoute,
   DashboardGuildIdRoute,
   ApiAuthLogoutRoute,
   ApiAuthDiscordOauthCallbackRoute,
   ApiAuthDiscordLoginRoute,
+  ApiAuthLocalLoginRoute,
+  ApiVerifyRequestEmailRoute,
+  ApiVerifyConfirmRoute,
   ApiPublicBotSyncRoute,
+  ApiPublicVerifyStartRoute,
 }
 
 export const routeTree = rootRouteImport
