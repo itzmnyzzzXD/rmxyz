@@ -1,8 +1,8 @@
-"""RM VPS bootstrap + verified-account onboarding command.
+"""RM VPS bootstrap + verified-account onboarding.
 
-The pinned RM core already owns the general command catalog. This wrapper only
-adds the verified-account onboarding flow so commands cannot collide with the
-core on startup.
+The pinned RM core owns the general command catalog. This wrapper adds the
+verified-account onboarding flow and provides a safer startup path for the
+core so a pre-registered command cannot crash cog loading.
 """
 
 from __future__ import annotations
@@ -36,14 +36,22 @@ if not sync_key or sync_key == "PUT_YOUR_SYNC_KEY_HERE":
 os.environ["DASHBOARD_URL"] = DASHBOARD_URL
 os.environ["BOT_SYNC_KEY"] = sync_key
 
-# Load the stable RM core. Its own main() remains the single startup path.
+# Load the stable RM 2.0.0 core without executing its __main__ block.
 code = urllib.request.urlopen(PINNED_BOT_URL, timeout=20).read()
 core_globals = globals().copy()
 core_globals["__name__"] = "rm_bot_core"
 exec(compile(code, "rm_bot_core.py", "exec"), core_globals, core_globals)
 
 bot = core_globals["bot"]
-main = core_globals["main"]
+core_setup_hook = bot.setup_hook
+core_classes = {
+    name: core_globals[name]
+    for name in (
+        "Moderation", "Security", "Info", "Tools", "Fun", "Economy",
+        "Tickets", "Owner", "Interactions", "Generators", "Links"
+    )
+    if name in core_globals
+}
 
 import discord
 from discord.ext import commands
@@ -72,7 +80,7 @@ async def create_verify_link(member: discord.Member, guild: discord.Guild):
     ) as response:
         body = await response.json(content_type=None)
     if response.status != 200 or not body.get("url"):
-        raise RuntimeError(f"dashboard returned {response.status}")
+        raise RuntimeError(f"dashboard returned {response.status}: {body}")
     return str(body["url"])
 
 
@@ -133,24 +141,20 @@ class VerifyEmailModal(discord.ui.Modal, title="RM account verification"):
             )
 
 
-async def send_verify_flow(ctx_or_interaction):
-    guild = ctx_or_interaction.guild
-    member = ctx_or_interaction.author if hasattr(ctx_or_interaction, "author") else ctx_or_interaction.user
-    if guild is None:
-        target = ctx_or_interaction
-        msg = "Run `rm!verify` inside the server you want to manage."
-        if isinstance(target, discord.Interaction):
-            return await target.response.send_message(msg, ephemeral=True)
-        return await target.send(msg)
-    if not isinstance(member, discord.Member) or not _managed(member, guild):
-        msg = "You need Administrator or Manage Server to verify this server."
-        if isinstance(ctx_or_interaction, discord.Interaction):
-            return await ctx_or_interaction.response.send_message(msg, ephemeral=True)
-        return await ctx_or_interaction.send(msg)
-    if isinstance(ctx_or_interaction, discord.Interaction):
-        return await ctx_or_interaction.response.send_modal(VerifyEmailModal())
+async def send_verify_flow(ctx: commands.Context):
+    if ctx.guild is None:
+        return await ctx.reply(
+            "Run `rm!verify` inside the server you want to manage.",
+            mention_author=False,
+        )
+    member = ctx.author
+    if not isinstance(member, discord.Member) or not _managed(member, ctx.guild):
+        return await ctx.reply(
+            "You need Administrator or Manage Server to verify this server.",
+            mention_author=False,
+        )
     try:
-        url = await create_verify_link(member, guild)
+        url = await create_verify_link(member, ctx.guild)
         view = discord.ui.View(timeout=300)
         view.add_item(
             discord.ui.Button(
@@ -159,7 +163,7 @@ async def send_verify_flow(ctx_or_interaction):
                 style=discord.ButtonStyle.link,
             )
         )
-        await ctx_or_interaction.reply(
+        await ctx.reply(
             embed=discord.Embed(
                 title="RM Verification",
                 description=(
@@ -173,7 +177,7 @@ async def send_verify_flow(ctx_or_interaction):
         )
     except Exception as exc:
         print(f"[verify] failed: {exc}")
-        await ctx_or_interaction.reply(
+        await ctx.reply(
             "I couldn't create your verification link right now. Check the dashboard and sync key.",
             mention_author=False,
         )
@@ -185,25 +189,52 @@ async def prefix_verify(ctx: commands.Context):
     await send_verify_flow(ctx)
 
 
-# Keep the slash version as an optional shortcut, while prefix commands are the
-# official onboarding entry point.
 @bot.tree.command(name="verify", description="Create your secure RM Dashboard account")
 async def verify(interaction: discord.Interaction):
-    await send_verify_flow(interaction)
+    if interaction.guild is None:
+        return await interaction.response.send_message(
+            "Run `/verify` inside the server you want to manage.", ephemeral=True
+        )
+    member = interaction.user
+    if not isinstance(member, discord.Member) or not _managed(member, interaction.guild):
+        return await interaction.response.send_message(
+            "You need Administrator or Manage Server to verify this server.", ephemeral=True
+        )
+    await interaction.response.send_modal(VerifyEmailModal())
 
 
-async def run_main_safely():
-    try:
-        await main()
-    except BaseException:
-        session = getattr(bot, "session", None)
-        if session is not None and not session.closed:
-            await session.close()
-        raise
+async def safe_core_main():
+    """Start the pinned core while allowing duplicate command names to be replaced.
+
+    The pinned core already registers some command names before cog injection.
+    discord.py raises CommandRegistrationError when a later cog uses the same
+    name unless add_cog(..., override=True) is used. The override keeps the
+    feature-rich cog implementation instead of crashing the VPS at startup.
+    """
+    token = os.environ.get("DISCORD_BOT_TOKEN", "").strip()
+    if not token or token == "PUT_YOUR_BOT_TOKEN_HERE":
+        raise SystemExit("Set DISCORD_BOT_TOKEN in the VPS environment before starting RM.")
+
+    if not sync_key or sync_key == "PUT_YOUR_SYNC_KEY_HERE":
+        print("WARNING: BOT_SYNC_KEY is not set — the dashboard bridge is disabled.")
+
+    bot.setup_hook = core_setup_hook
+
+    async with bot:
+        for name in (
+            "Moderation", "Security", "Info", "Tools", "Fun", "Economy",
+            "Tickets", "Owner", "Interactions", "Generators", "Links"
+        ):
+            cls = core_classes.get(name)
+            if cls is None:
+                continue
+            await bot.add_cog(cls(), override=True)
+
+        await bot.start(token)
 
 
 if __name__ == "__main__":
     try:
-        asyncio.run(run_main_safely())
+        asyncio.run(safe_core_main())
     except KeyboardInterrupt:
         print("shutting down")
