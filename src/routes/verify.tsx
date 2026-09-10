@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Eye, EyeOff, Mail, ShieldCheck, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/verify")({ component: VerifyPage });
 
 function VerifyPage() {
-  const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const challenge = params.get("challenge") ?? "";
-  const [email, setEmail] = useState(params.get("email") ?? "");
+  const [ready, setReady] = useState(false);
+  const [challenge, setChallenge] = useState("");
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +15,13 @@ function VerifyPage() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setChallenge(params.get("challenge") ?? "");
+    setEmail(params.get("email") ?? "");
+    setReady(true);
+  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -45,6 +52,18 @@ function VerifyPage() {
     }
   }
 
+  if (!ready) {
+    return (
+      <VerifyShell>
+        <div className="space-y-4 text-center">
+          <div className="mx-auto h-10 w-10 animate-pulse rounded-2xl bg-red-500/15" />
+          <h1 className="text-2xl font-black">Loading verification…</h1>
+          <p className="text-sm text-zinc-500">Preparing your secure RM signup.</p>
+        </div>
+      </VerifyShell>
+    );
+  }
+
   if (!challenge) {
     return (
       <VerifyShell>
@@ -62,9 +81,7 @@ function VerifyPage() {
     return (
       <VerifyShell>
         <div className="space-y-5 text-center">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-emerald-400/10 ring-1 ring-emerald-400/20">
-            <Mail className="h-7 w-7 text-emerald-300" />
-          </div>
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-emerald-400/10 ring-1 ring-emerald-400/20"><Mail className="h-7 w-7 text-emerald-300" /></div>
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">One last step</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight">Check your inbox</h1>
@@ -90,30 +107,22 @@ function VerifyPage() {
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Username">
-            <input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="itzmnyzz" maxLength={24} />
-          </Field>
-          <Field label="Profile picture URL">
-            <input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="Optional" maxLength={500} />
-          </Field>
+          <Field label="Username"><input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="itzmnyzz" maxLength={24} /></Field>
+          <Field label="Profile picture URL"><input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="Optional" maxLength={500} /></Field>
         </div>
 
         <Field label="Password">
           <div className="relative">
             <input required minLength={8} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" className="pr-12" />
-            <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-2 text-zinc-500 hover:text-zinc-200">
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
+            <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-2 text-zinc-500 hover:text-zinc-200">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
           </div>
         </Field>
 
         {error && <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>}
 
         <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3.5 font-black shadow-[0_16px_50px_-20px_rgba(239,68,68,.8)] transition hover:bg-red-400 disabled:cursor-wait disabled:opacity-60">
-          <Sparkles className="h-4 w-4" />
-          {busy ? "Sending verification…" : "Create account & email me"}
+          <Sparkles className="h-4 w-4" />{busy ? "Sending verification…" : "Create account & email me"}
         </button>
-
         <p className="text-center text-xs text-zinc-500">Already have an account? <Link to="/login" className="text-zinc-300 hover:text-white">Sign in</Link></p>
       </form>
     </VerifyShell>
