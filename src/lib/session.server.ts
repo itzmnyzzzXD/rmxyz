@@ -9,6 +9,9 @@ export type RMSession = {
   refreshToken?: string | undefined;
   expiresAt?: number | undefined;
   oauthState?: string | undefined;
+  discordId?: string | undefined;
+  managedGuildIds?: string[] | undefined;
+  authProvider?: "discord" | "local" | undefined;
 };
 
 function sessionConfig() {
@@ -17,7 +20,7 @@ function sessionConfig() {
   return {
     password,
     name: "rm_session",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 30,
     cookie: {
       httpOnly: true,
       sameSite: "lax" as const,
