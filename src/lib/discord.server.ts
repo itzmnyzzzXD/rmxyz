@@ -42,14 +42,9 @@ export function isDiscordConfigured() {
   return Boolean(clientId && clientSecret);
 }
 
-// Keep this in one place so the website login and Discord Developer Portal stay in sync.
-export const DISCORD_OAUTH_SCOPES = [
-  "guilds",
-  "identify",
-  "gdm.join",
-  "guilds.members.read",
-  "guilds.join",
-] as const;
+// Standard OAuth2 scopes needed by the web dashboard.
+// Do not mix these with Discord's bot-installation scopes.
+export const DISCORD_OAUTH_SCOPES = ["identify", "guilds"] as const;
 
 export function buildAuthorizeUrl(redirectUri: string, state: string) {
   const { clientId } = discordConfig();
@@ -66,18 +61,23 @@ export function buildAuthorizeUrl(redirectUri: string, state: string) {
 
 export async function exchangeCode(code: string, redirectUri: string) {
   const { clientId, clientSecret } = discordConfig();
+  if (!clientId || !clientSecret) throw new Error("Discord OAuth is not configured");
+
   const res = await fetch(`${DISCORD_API}/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: clientId ?? "",
-      client_secret: clientSecret ?? "",
+      client_id: clientId,
+      client_secret: clientSecret,
       grant_type: "authorization_code",
       code,
       redirect_uri: redirectUri,
     }),
   });
-  if (!res.ok) throw new Error(`Token exchange failed (${res.status})`);
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Token exchange failed (${res.status}): ${detail.slice(0, 300)}`);
+  }
   return (await res.json()) as {
     access_token: string;
     refresh_token: string;
