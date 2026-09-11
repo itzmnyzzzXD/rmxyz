@@ -279,7 +279,7 @@ function Overview({ guild, data, onTask, pending }: { guild?: { memberCount: num
     ["Members", guild?.memberCount ?? 0, Users],
     ["Channels", guild?.channelCount ?? 0, Terminal],
     ["Roles", guild?.roleCount ?? 0, ShieldCheck],
-    ["Security events", data.security.length, Siren],
+    ["Security events", data?.security.length, Siren],
   ] as const;
   return (
     <div className="space-y-5">
@@ -291,7 +291,7 @@ function Overview({ guild, data, onTask, pending }: { guild?: { memberCount: num
         <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-[0.16em] text-red-400">Command activity</p><h2 className="mt-1 text-xl font-semibold">Top commands</h2></div><Activity className="h-5 w-5 text-zinc-700" /></div>
           <div className="mt-6 space-y-3">
-            {data.topCommands.length ? data.topCommands.map((row, index) => <div key={row.command} className="flex items-center gap-3"><span className="w-6 text-xs text-zinc-700">{String(index + 1).padStart(2, "0")}</span><span className="min-w-0 flex-1 truncate font-mono text-sm text-zinc-300">{row.command}</span><div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-red-500" style={{ width: `${Math.max(8, (row.count / data.topCommands[0].count) * 100)}%` }} /></div><span className="w-8 text-right text-xs text-zinc-500">{row.count}</span></div>) : <Empty text="No command activity received yet." />}
+            {data?.topCommands.length ? data?.topCommands.map((row, index) => <div key={row.command} className="flex items-center gap-3"><span className="w-6 text-xs text-zinc-700">{String(index + 1).padStart(2, "0")}</span><span className="min-w-0 flex-1 truncate font-mono text-sm text-zinc-300">{row.command}</span><div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-red-500" style={{ width: `${Math.max(8, (row.count / data?.topCommands[0].count) * 100)}%` }} /></div><span className="w-8 text-right text-xs text-zinc-500">{row.count}</span></div>) : <Empty text="No command activity received yet." />}
           </div>
         </div>
 
@@ -309,8 +309,8 @@ function Overview({ guild, data, onTask, pending }: { guild?: { memberCount: num
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5"><div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-red-400" /><h2 className="font-semibold">Recent moderation</h2></div><div className="mt-4 space-y-2">{data.cases.length ? data.cases.map((row, i) => <div key={String(row.id ?? i)} className="rounded-2xl border border-white/5 bg-black/15 p-3"><div className="flex items-center justify-between gap-3"><span className="text-sm text-zinc-300">Case #{String(row.case_number ?? "—")}</span><span className="text-xs text-zinc-600">{row.action as string}</span></div><p className="mt-1 text-xs text-zinc-600 truncate">{String(row.reason ?? "No reason provided")}</p></div>) : <Empty text="No moderation cases yet." />}</div></div>
-        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5"><div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-red-400" /><h2 className="font-semibold">Security feed</h2></div><div className="mt-4 space-y-2">{data.security.length ? data.security.map((row, i) => <div key={String(row.id ?? i)} className="rounded-2xl border border-white/5 bg-black/15 p-3"><div className="flex items-center justify-between gap-3"><span className="text-sm text-zinc-300">{String(row.system ?? "security")}</span><span className="text-xs text-red-300">{String(row.severity ?? "medium")}</span></div><p className="mt-1 text-xs text-zinc-600 truncate">{String(row.event_type ?? "event")} · {String(row.action_taken ?? "no action")}</p></div>) : <Empty text="No security events yet." />}</div></div>
+        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5"><div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-red-400" /><h2 className="font-semibold">Recent moderation</h2></div><div className="mt-4 space-y-2">{data?.cases.length ? data?.cases.map((row, i) => <div key={String(row.id ?? i)} className="rounded-2xl border border-white/5 bg-black/15 p-3"><div className="flex items-center justify-between gap-3"><span className="text-sm text-zinc-300">Case #{String(row.case_number ?? "—")}</span><span className="text-xs text-zinc-600">{row.action as string}</span></div><p className="mt-1 text-xs text-zinc-600 truncate">{String(row.reason ?? "No reason provided")}</p></div>) : <Empty text="No moderation cases yet." />}</div></div>
+        <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5"><div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-red-400" /><h2 className="font-semibold">Security feed</h2></div><div className="mt-4 space-y-2">{data?.security.length ? data?.security.map((row, i) => <div key={String(row.id ?? i)} className="rounded-2xl border border-white/5 bg-black/15 p-3"><div className="flex items-center justify-between gap-3"><span className="text-sm text-zinc-300">{String(row.system ?? "security")}</span><span className="text-xs text-red-300">{String(row.severity ?? "medium")}</span></div><p className="mt-1 text-xs text-zinc-600 truncate">{String(row.event_type ?? "event")} · {String(row.action_taken ?? "no action")}</p></div>) : <Empty text="No security events yet." />}</div></div>
       </section>
     </div>
   );
