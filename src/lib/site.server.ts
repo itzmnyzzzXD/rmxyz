@@ -1,5 +1,5 @@
 /** Single source of truth for the public site address (server side). */
-const FALLBACK = "https://rmxyz.lovable.app";
+const FALLBACK = "https://rmxyz.vercel.app";
 
 function clean(value?: string | null) {
   const raw = value?.trim();
@@ -8,7 +8,7 @@ function clean(value?: string | null) {
   return withScheme.replace(/\/+$/, "");
 }
 
-/** Absolute origin of the dashboard, e.g. https://rmxyz.lovable.app */
+/** Absolute origin of the dashboard. */
 export function siteUrl() {
   return (
     clean(process.env["PUBLIC_SITE_URL"]) ||
