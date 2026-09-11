@@ -43,7 +43,7 @@ load_dotenv()
 # >>> PASTE YOUR BOT TOKEN IN bot/.env AS DISCORD_BOT_TOKEN <<<
 TOKEN = os.getenv("DISCORD_BOT_TOKEN", "PUT_YOUR_BOT_TOKEN_HERE")
 
-DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://rmxyz.lovable.app").rstrip("/")
+DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://rmxyz.vercel.app").rstrip("/")
 SYNC_KEY = os.getenv("BOT_SYNC_KEY", "")
 SYNC_URL = f"{DASHBOARD_URL}/api/public/bot/sync"
 
@@ -2339,7 +2339,7 @@ class VerifyStartView(discord.ui.View):
 class Verification(commands.Cog):
     """Dashboard account onboarding."""
 
-    @commands.command(name="verify", aliases=["verifyaccount", "dashboard", "panel"])
+    @commands.command(name="verify", aliases=["verifyaccount", "panel"])
     @commands.guild_only()
     async def verify(self, ctx: commands.Context):
         """Create your RM dashboard account."""
