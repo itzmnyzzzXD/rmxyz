@@ -2382,7 +2382,7 @@ async def main():
         for cog in (Moderation(), Security(), Info(), Tools(), Fun(), Economy(),
                     Tickets(), Owner(), Interactions(), Generators(), Links(),
                     Verification()):
-            await bot.add_cog(cog)
+            await bot.add_cog(cog, override=True)
         await bot.start(TOKEN)
 
 
