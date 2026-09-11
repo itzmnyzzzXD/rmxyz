@@ -34,7 +34,7 @@ function Index() {
             Bot status available in dashboard
           </span>
           <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-tight tracking-tight">One bot to moderate, protect and grow your Discord server.</h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">RM answers to <code className="text-primary">rm!</code> and <code className="text-primary">rm?</code>, custom prefixes, mentions and slash commands — with anti-nuke, anti-raid and AutoMod running in the background.</p>
+          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">RM answers to <code className="text-primary">rm!</code> and <code className="text-primary">rm?</code>, custom prefixes, mentions and more. Everything is configurable from an intuitive dashboard.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="/login" className="rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Open dashboard</a>
             <a href="/verify" className="rounded-lg border border-border px-5 py-3 text-sm font-medium">Open verification</a>
