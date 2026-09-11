@@ -9,6 +9,8 @@ const payloadSchema = z.object({
 
 const str = (v: unknown, fallback = "") => (v == null ? fallback : String(v));
 const num = (v: unknown, fallback = 0) => (v == null ? fallback : Number(v));
+const strn = (v: unknown): string | null => (v == null ? null : String(v));
+const numn = (v: unknown): number | null => (v == null ? null : Number(v));
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -58,9 +60,9 @@ export const Route = createFileRoute("/api/public/bot/sync")({
 
           if (action === "heartbeat") {
             const row = {
-              shard_id: num(data.shard_id), status: str(data.status, "online"), latency_ms: data.latency_ms ?? null,
+              shard_id: num(data.shard_id), status: str(data.status, "online"), latency_ms: numn(data.latency_ms),
               guild_count: num(data.guild_count), user_count: num(data.user_count), commands_processed: num(data.commands_processed),
-              memory_mb: data.memory_mb ?? null, cpu_percent: data.cpu_percent ?? null, started_at: data.started_at ?? null,
+              memory_mb: numn(data.memory_mb), cpu_percent: numn(data.cpu_percent), started_at: strn(data.started_at),
               version: str(data.version, "1.0.0"), updated_at: now,
             };
             const index = store.status.findIndex((x) => x.shard_id === row.shard_id);
@@ -93,9 +95,9 @@ export const Route = createFileRoute("/api/public/bot/sync")({
             const next = store.cases.filter((x) => x.guild_id === guildId).reduce((m, x) => Math.max(m, Number(x.case_number ?? 0)), 0) + 1;
             store.cases.push({
               id: crypto.randomUUID(), guild_id: guildId, case_number: next,
-              action: str(data.action_type, "warn"), target_id: str(data.target_id), target_tag: data.target_tag ?? null,
-              moderator_id: str(data.moderator_id), moderator_tag: data.moderator_tag ?? null, reason: data.reason ?? null,
-              duration_seconds: data.duration_seconds ?? null, active: true, created_at: now,
+              action: str(data.action_type, "warn"), target_id: str(data.target_id), target_tag: strn(data.target_tag),
+              moderator_id: str(data.moderator_id), moderator_tag: strn(data.moderator_tag), reason: strn(data.reason),
+              duration_seconds: numn(data.duration_seconds), active: true, created_at: now,
             });
             trimStore();
             return json({ ok: true, case_number: next });
@@ -103,8 +105,8 @@ export const Route = createFileRoute("/api/public/bot/sync")({
           if (action === "log") {
             store.logs.push({
               id: crypto.randomUUID(), guild_id: str(data.guild_id), category: str(data.category, "server"),
-              event_type: str(data.event_type, "event"), actor_id: data.actor_id ?? null, target_id: data.target_id ?? null,
-              channel_id: data.channel_id ?? null, summary: data.summary ?? null, created_at: now,
+              event_type: str(data.event_type, "event"), actor_id: strn(data.actor_id), target_id: strn(data.target_id),
+              channel_id: strn(data.channel_id), summary: strn(data.summary), created_at: now,
             });
             trimStore();
             return json({ ok: true });
@@ -112,23 +114,23 @@ export const Route = createFileRoute("/api/public/bot/sync")({
           if (action === "security") {
             store.security.push({
               id: crypto.randomUUID(), guild_id: str(data.guild_id), system: str(data.system, "antinuke"),
-              event_type: str(data.event_type, "event"), severity: str(data.severity, "medium"), actor_id: data.actor_id ?? null,
-              actor_tag: data.actor_tag ?? null, action_taken: data.action_taken ?? null, resolved: false, created_at: now,
+              event_type: str(data.event_type, "event"), severity: str(data.severity, "medium"), actor_id: strn(data.actor_id),
+              actor_tag: strn(data.actor_tag), action_taken: strn(data.action_taken), resolved: false, created_at: now,
             });
             trimStore();
             return json({ ok: true });
           }
           if (action === "command") {
             store.usage.push({
-              guildId: (data.guild_id ?? null) as string | null, command: str(data.command, "unknown"),
-              userId: (data.user_id ?? null) as string | null, success: Boolean(data.success ?? true), createdAt: now,
+              guildId: (strn(data.guild_id)) as string | null, command: str(data.command, "unknown"),
+              userId: strn(data.user_id), success: Boolean(data.success ?? true), createdAt: now,
             });
             trimStore();
             return json({ ok: true });
           }
           if (action === "error") {
-            store.errors.push({ id: crypto.randomUUID(), source: "bot", guild_id: data.guild_id ?? null,
-              command: data.command ?? null, message: str(data.message, "unknown error").slice(0, 2000), created_at: now });
+            store.errors.push({ id: crypto.randomUUID(), source: "bot", guild_id: strn(data.guild_id),
+              command: strn(data.command), message: str(data.message, "unknown error").slice(0, 2000), created_at: now });
             trimStore();
             return json({ ok: true });
           }
