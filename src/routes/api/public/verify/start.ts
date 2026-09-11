@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createVerifyChallenge } from "@/lib/local-auth.server";
+import { requestOrigin } from "@/lib/site.server";
 
-const DASHBOARD_URL = "https://rmxyz.vercel.app";
+
 
 function authorized(request: Request) {
   const configured = process.env["BOT_SYNC_KEY"]?.trim();
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/api/public/verify/start")({
             discordUsername: String(body.discord_username || "Discord user").slice(0, 100),
             guildId: body.guild_id!,
           });
-          return Response.json({ ok: true, url: `${DASHBOARD_URL}/verify?challenge=${encodeURIComponent(challenge)}` });
+          return Response.json({ ok: true, url: `${requestOrigin(request)}/verify?challenge=${encodeURIComponent(challenge)}` });
         } catch (error) {
           console.error("verify start failed", error);
           return Response.json({ error: "server_error" }, { status: 500 });

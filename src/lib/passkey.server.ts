@@ -2,8 +2,10 @@ import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthe
 import { getRMSession } from "@/lib/session.server";
 import { getLocalUserById, signInLocal, type LocalUser } from "@/lib/local-auth.server";
 
-const RP_ID = "rmxyz.vercel.app";
-const ORIGIN = "https://rmxyz.vercel.app";
+import { siteHost, siteUrl } from "@/lib/site.server";
+
+const RP_ID = siteHost();
+const ORIGIN = siteUrl();
 const RP_NAME = "RM Dashboard";
 const STORE_KEY = "rm:passkeys:v1";
 
