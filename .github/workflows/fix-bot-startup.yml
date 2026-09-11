@@ -19,15 +19,29 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("bot/bot.py")
           text = path.read_text(encoding="utf-8")
-          old = "await bot.add_cog(cog)"
-          new = "await bot.add_cog(cog, override=True)"
+          original = text
 
-          if old in text and new not in text:
-              path.write_text(text.replace(old, new), encoding="utf-8")
-              print("Patched bot.py: enabled cog command override.")
+          # discord.py's cog override does not resolve an alias collision
+          # between two different cogs. The Info cog owns `dashboard`, so the
+          # verification cog must not also claim that alias.
+          text = text.replace(
+              '@commands.command(name="verify", aliases=["verifyaccount", "dashboard", "panel"])',
+              '@commands.command(name="verify", aliases=["verifyaccount", "panel"])',
+          )
+
+          # Keep the VPS pointed at the deployed Vercel dashboard by default.
+          text = text.replace(
+              'DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://rmxyz.lovable.app").rstrip("/")',
+              'DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://rmxyz.vercel.app").rstrip("/")',
+          )
+
+          if text != original:
+              path.write_text(text, encoding="utf-8")
+              print("Patched bot.py successfully.")
           else:
               print("No bot.py patch needed.")
           PY
@@ -40,6 +54,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix bot duplicate command registration"
+            git commit -m "fix duplicate dashboard command alias"
             git push
           fi
