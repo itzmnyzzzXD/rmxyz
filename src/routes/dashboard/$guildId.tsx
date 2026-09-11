@@ -274,7 +274,7 @@ function GuildDashboard() {
   );
 }
 
-function Overview({ guild, data, onTask, pending }: { guild?: { memberCount: number; channelCount: number; roleCount: number; botPresent: boolean; lastSeenAt: string | null } | null; data: Awaited<ReturnType<typeof getGuildOverview>>; onTask: (v: "lockdown" | "unlockdown" | "raidmode_on" | "raidmode_off" | "sync_slash") => void; pending: boolean }) {
+function Overview({ guild, data, onTask, pending }: { guild?: { memberCount: number; channelCount: number; roleCount: number; botPresent: boolean; lastSeenAt: string | null } | null; data?: Awaited<ReturnType<typeof getGuildOverview>> | undefined; onTask: (v: "lockdown" | "unlockdown" | "raidmode_on" | "raidmode_off" | "sync_slash") => void; pending: boolean }) {
   const stats = [
     ["Members", guild?.memberCount ?? 0, Users],
     ["Channels", guild?.channelCount ?? 0, Terminal],
