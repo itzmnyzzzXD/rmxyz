@@ -19,24 +19,27 @@ type Guild = {
   lastSeenAt: string | null;
 };
 
-type CaseRow = Record<string, unknown>;
-type SecurityRow = Record<string, unknown>;
-type LogRow = Record<string, unknown>;
+type Row = { [key: string]: JsonValue | undefined };
+export type CaseRow = Row & { guild_id: string; created_at: string; case_number?: number; target_tag?: string | null };
+export type SecurityRow = Row & { guild_id: string; created_at: string };
+export type LogRow = Row & { guild_id: string; created_at: string };
+export type StatRow = Row & { guild_id: string; day: string };
+export type StatusRow = Row & { shard_id: number };
 type Task = { id: string; guildId: string; taskType: string; payload: Record<string, JsonValue>; requestedBy?: string | null; status: string; error?: string | null; createdAt: string; processedAt?: string | null };
 
 type Store = {
-  status: Record<string, unknown>[];
+  status: StatusRow[];
   guilds: Map<string, Guild>;
   configs: Map<string, { enabled: boolean; settings: Record<string, JsonValue> }>;
   words: Map<string, { id: string; guildId: string; word: string; listType: string; matchMode: string }>;
   cases: CaseRow[];
   security: SecurityRow[];
   logs: LogRow[];
-  stats: Record<string, unknown>[];
+  stats: StatRow[];
   usage: { guildId: string | null; command: string; userId?: string | null; success: boolean; createdAt: string }[];
   tasks: Task[];
-  errors: Record<string, unknown>[];
-  blacklist: Record<string, unknown>[];
+  errors: Row[];
+  blacklist: Row[];
 };
 
 const g = globalThis as typeof globalThis & { __rmxyzStore?: Store };
