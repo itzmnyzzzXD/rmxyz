@@ -1,6 +1,3 @@
-// tsyringe (pulled in by the passkey/WebAuthn dependency chain) requires this
-// polyfill at the very top of the server entry, or every SSR request fails.
-import "reflect-metadata";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
@@ -12,11 +9,15 @@ type ServerEntry = {
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
+// tsyringe (reached through the WebAuthn dependency chain) needs a reflect
+// polyfill before any SSR module is evaluated, otherwise every request 500s.
+// A dynamic import is used because a bare static import is tree-shaken away by
+// the package's "sideEffects": false flag.
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+    serverEntryPromise = import("reflect-metadata")
+      .then(() => import("@tanstack/react-start/server-entry"))
+      .then((m) => (m.default ?? m) as ServerEntry);
   }
   return serverEntryPromise;
 }
