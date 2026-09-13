@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "RM Dashboard" },
       { property: "og:description", content: "RM Discord moderation dashboard" },
       { property: "og:type", content: "website" },
-      { name: "theme-color", content: "#09090b" },
+      { name: "theme-color", content: "#7c3aed" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
