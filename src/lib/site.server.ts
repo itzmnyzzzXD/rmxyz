@@ -1,5 +1,5 @@
 /** Single source of truth for the public site address (server side). */
-const FALLBACK = "https://rmxyz.vercel.app";
+const FALLBACK = "https://rmxyz.lovable.app";
 
 function clean(value?: string | null) {
   const raw = value?.trim();
