@@ -9,11 +9,23 @@ type ServerEntry = {
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
+// tsyringe (reached through the WebAuthn dependency chain) needs a reflect
+// polyfill before any SSR module is evaluated, otherwise every request 500s.
+// A dynamic import is used because a bare static import is tree-shaken away by
+// the package's "sideEffects": false flag.
+async function loadReflectPolyfill() {
+  const globals = globalThis as { Reflect?: { getMetadata?: unknown } };
+  if (typeof globals.Reflect?.getMetadata === "function") return;
+  const polyfill = await import("reflect-metadata");
+  // Touch the namespace so the import is never treated as removable.
+  if (!polyfill) throw new Error("reflect-metadata polyfill failed to load");
+}
+
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+    serverEntryPromise = loadReflectPolyfill()
+      .then(() => import("@tanstack/react-start/server-entry"))
+      .then((m) => (m.default ?? m) as ServerEntry);
   }
   return serverEntryPromise;
 }

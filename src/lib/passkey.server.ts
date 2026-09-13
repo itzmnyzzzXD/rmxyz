@@ -1,4 +1,12 @@
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse, type WebAuthnCredential } from "@simplewebauthn/server";
+import type { WebAuthnCredential, generateAuthenticationOptions as GenAuthOpts, generateRegistrationOptions as GenRegOpts, verifyAuthenticationResponse as VerifyAuth, verifyRegistrationResponse as VerifyReg } from "@simplewebauthn/server";
+
+// Loaded lazily: the library's dependency graph must not be evaluated during
+// server start-up, otherwise every SSR request fails in the edge runtime.
+const webauthn = () => import("@simplewebauthn/server");
+const generateRegistrationOptions: typeof GenRegOpts = async (...args) => (await webauthn()).generateRegistrationOptions(...args);
+const generateAuthenticationOptions: typeof GenAuthOpts = async (...args) => (await webauthn()).generateAuthenticationOptions(...args);
+const verifyRegistrationResponse: typeof VerifyReg = async (...args) => (await webauthn()).verifyRegistrationResponse(...args);
+const verifyAuthenticationResponse: typeof VerifyAuth = async (...args) => (await webauthn()).verifyAuthenticationResponse(...args);
 import { getRMSession } from "@/lib/session.server";
 import { getLocalUserById, signInLocal, type LocalUser } from "@/lib/local-auth.server";
 
