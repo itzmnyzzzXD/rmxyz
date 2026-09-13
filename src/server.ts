@@ -1,3 +1,6 @@
+// tsyringe (pulled in by the passkey/WebAuthn dependency chain) requires this
+// polyfill at the very top of the server entry, or every SSR request fails.
+import "reflect-metadata";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
