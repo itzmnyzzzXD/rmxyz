@@ -1,21 +1,91 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { COMMANDS, CATEGORIES } from "@/lib/rm/commands";
 import { MODULE_META } from "@/lib/rm/modules";
-import { ArrowRight, Bot, Check, ChevronRight, Command, Shield, ShieldAlert, Sparkles, Terminal, Zap } from "lucide-react";
 
-export const Route = createFileRoute("/")({ head:()=>({meta:[{title:"RM — Discord security, moderation & automation"},{name:"description",content:"RM is the all-in-one Discord bot for moderation, security, automation and community management."}]}), component:Home });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "RM — Discord moderation, security and community bot" },
+      { name: "description", content: "RM protects your Discord server with moderation, AutoMod, anti-nuke and anti-raid, all managed from one dashboard." },
+      { property: "og:title", content: "RM — Discord security bot" },
+      { property: "og:description", content: "Moderation, AutoMod, anti-nuke, anti-raid, tickets, leveling and economy in one bot." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Index,
+});
 
-function Home(){
- const features=[[Shield,"Protection","Anti-nuke, anti-raid, lockdowns and security controls."],[Zap,"Automation","AutoMod, filters, logs and configurable actions."],[Bot,"Community","Tickets, leveling, economy and server tools."],[Command,"Command control","Configure RM from one focused dashboard."],[ShieldAlert,"Incident center","Cases, security events and audit information."],[Sparkles,"Fast UI","A clean experience built for desktop and mobile."]];
- return <main className="rm-home min-h-screen overflow-hidden bg-[#050507] text-white">
-  <div className="pointer-events-none fixed inset-0 -z-0 opacity-80 [background-image:radial-gradient(circle_at_50%_-10%,rgba(239,68,68,.22),transparent_35%),radial-gradient(circle_at_0%_60%,rgba(127,29,29,.14),transparent_30%)]"/>
-  <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8"><Link to="/" className="group flex items-center gap-3"><img src="/bot-icon.png" alt="RM" className="h-10 w-10 rounded-[13px] border border-white/10 shadow-lg shadow-red-950/30 transition group-hover:scale-105"/><div><b className="text-lg">RM</b><div className="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-600">Discord Control</div></div></Link><div className="hidden items-center gap-7 text-sm text-zinc-500 md:flex"><a href="#features" className="hover:text-white">Features</a><a href="#commands" className="hover:text-white">Commands</a><a href="#security" className="hover:text-white">Security</a></div><Link to="/login" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 py-2.5 text-sm font-bold hover:border-red-400/30 hover:bg-red-500/10">Dashboard <ArrowRight className="h-4 w-4"/></Link></nav>
-  <section className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24"><div className="max-w-4xl"><div className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-500/[.07] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[.16em] text-red-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400"/> Built for serious servers</div><h1 className="mt-6 text-[clamp(3.2rem,9vw,7rem)] font-black leading-[.88] tracking-[-.06em]">Your server.<br/><span className="rm-gradient-text">Under control.</span></h1><p className="mt-7 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">RM combines moderation, anti-raid, anti-nuke, AutoMod, tickets, logging and community tools into one fast control center.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/login" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-red-500 px-6 py-3.5 text-sm font-black shadow-xl shadow-red-950/30 hover:bg-red-400">Open dashboard <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1"/></Link><a href="#features" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[.035] px-6 py-3.5 text-sm font-bold text-zinc-300 hover:bg-white/[.07]">Explore RM</a></div></div>
-   <div className="rm-terminal mt-16 max-w-5xl overflow-hidden rounded-[28px] border border-white/10 bg-[#09090c]/90 shadow-2xl shadow-black/50 sm:mt-20"><div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="flex gap-1.5"><i/><i/><i/></div><div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em] text-zinc-600"><Terminal className="h-3.5 w-3.5"/> rm control</div><div className="w-10"/></div><div className="grid md:grid-cols-[1.1fr_.9fr]"><div className="p-6 font-mono text-xs leading-7 text-zinc-500 sm:p-8 sm:text-sm"><div><span className="text-red-400">rm!</span> security status</div><div className="text-zinc-300">→ anti-nuke <span className="text-emerald-400">enabled</span></div><div className="text-zinc-300">→ anti-raid <span className="text-emerald-400">enabled</span></div><div className="text-zinc-300">→ automod <span className="text-emerald-400">enabled</span></div><div className="mt-3 text-zinc-700">────────────────────</div><div className="text-zinc-300">modules <span className="text-white">{MODULE_META.length}</span></div><div className="text-zinc-300">commands <span className="text-white">{COMMANDS.length}</span></div></div><div className="border-t border-white/10 p-5 md:border-l md:border-t-0 sm:p-7"><div className="text-xs font-bold uppercase tracking-[.16em] text-zinc-600">Live protection</div><div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-400/15 bg-emerald-400/[.05] p-4"><div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300"><Shield className="h-5 w-5"/></div><div><div className="text-sm font-bold">All systems operational</div><div className="mt-1 text-xs text-zinc-600">Your server stays monitored</div></div></div></div></div></div>
-  </section>
-  <section id="features" className="relative z-10 border-y border-white/[.07] bg-white/[.015]"><div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28"><div className="text-xs font-bold uppercase tracking-[.2em] text-red-400">Everything in one place</div><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">Built like a control panel,<br/>not a command list.</h2><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{features.map(([Icon,title,desc])=>{const I=Icon as typeof Shield;return <div key={title as string} className="rm-card group rounded-[25px] border border-white/10 bg-white/[.025] p-6 transition hover:-translate-y-1 hover:border-red-400/20"><div className="grid h-11 w-11 place-items-center rounded-2xl bg-red-500/10 text-red-300"><I className="h-5 w-5"/></div><h3 className="mt-5 font-bold">{title as string}</h3><p className="mt-2 text-sm leading-6 text-zinc-500">{desc as string}</p></div>})}</div></div></section>
-  <section id="security" className="relative z-10 mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28"><div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-center"><div><div className="text-xs font-bold uppercase tracking-[.2em] text-red-400">Security first</div><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">When something goes wrong, RM is already there.</h2><p className="mt-5 text-sm leading-7 text-zinc-500">Configure modules, inspect incidents, review logs and trigger emergency actions without digging through Discord.</p><div className="mt-7 space-y-3">{["One-click lockdown controls","Configurable module settings","Security events & cases","Live bot connection status"].map(x=><div key={x} className="flex items-center gap-3 text-sm font-semibold"><span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-400/10 text-emerald-300"><Check className="h-3.5 w-3.5"/></span>{x}</div>)}</div></div><div className="rounded-[30px] border border-white/10 bg-gradient-to-br from-red-500/[.09] to-white/[.02] p-5 shadow-2xl shadow-red-950/10 sm:p-7"><div className="rounded-[22px] border border-white/10 bg-[#070709] p-5"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-red-500/10"><ShieldAlert className="h-5 w-5 text-red-300"/></div><div><div className="text-sm font-bold">Security center</div><div className="text-xs text-zinc-600">Realtime overview</div></div></div><span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold text-emerald-300">PROTECTED</span></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{[["0","active incidents"],["24/7","monitoring"],["ON","auto response"]].map(([v,l])=><div key={l} className="rounded-2xl border border-white/5 bg-white/[.025] p-4"><div className="text-2xl font-black">{v}</div><div className="mt-1 text-xs text-zinc-600">{l}</div></div>)}</div></div></div></div></section>
-  <section id="commands" className="relative z-10 mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28"><div className="rounded-[30px] border border-white/10 bg-white/[.02] p-6 sm:p-8"><div className="flex items-end justify-between gap-4"><div><div className="text-xs font-bold uppercase tracking-[.2em] text-red-400">Command library</div><h2 className="mt-2 text-2xl font-black">{COMMANDS.length} commands, organized.</h2></div><Link to="/login" className="hidden items-center gap-1 text-sm font-bold text-red-300 sm:inline-flex">Open dashboard <ChevronRight className="h-4 w-4"/></Link></div><div className="mt-7 space-y-5">{CATEGORIES.slice(0,6).map(category=><div key={category}><div className="mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-zinc-600">{category}</div><div className="flex flex-wrap gap-2">{COMMANDS.filter(c=>c.category===category).slice(0,12).map(c=><span key={c.name} title={c.description} className="rounded-xl border border-white/8 bg-black/20 px-3 py-1.5 font-mono text-[11px] text-zinc-400">{c.name}</span>)}</div></div>)}</div></div></section>
-  <footer className="relative z-10 border-t border-white/[.07] px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><img src="/bot-icon.png" alt="" className="h-6 w-6 rounded-lg"/> RM · Discord control</div><div>Moderation · Security · Automation · Community</div></div></footer>
- </main>;
+function Index() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-3">
+          <img src="/bot-icon.png" alt="RM bot icon" width={40} height={40} className="h-10 w-10 rounded-xl" />
+          <span className="text-xl font-semibold tracking-tight">RM</span>
+        </div>
+        <a href="/login" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90">Sign in</a>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-6 pb-24">
+        <section className="py-16">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+            Bot status available in dashboard
+          </span>
+          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-tight tracking-tight">One bot to moderate, protect and grow your Discord server.</h1>
+          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">RM answers to <code className="text-primary">rm!</code> and <code className="text-primary">rm?</code>, custom prefixes, mentions and more. Everything is configurable from an intuitive dashboard.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href="/login" className="rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Open dashboard</a>
+            <a href="/verify" className="rounded-lg border border-border px-5 py-3 text-sm font-medium">Open verification</a>
+            <a href="#commands" className="rounded-lg border border-border px-5 py-3 text-sm font-medium">Browse {COMMANDS.length} commands</a>
+          </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Servers", value: "—" },
+            { label: "Members protected", value: "—" },
+            { label: "Commands run", value: "—" },
+            { label: "Modules", value: MODULE_META.length.toLocaleString() },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
+              <div className="text-3xl font-semibold">{stat.value}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </section>
+
+        <section className="mt-20">
+          <h2 className="text-2xl font-semibold tracking-tight">Everything is configurable</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {MODULE_META.map((m) => (
+              <div key={m.key} className="rounded-xl border border-border bg-card p-5">
+                <h3 className="font-medium">{m.label}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{m.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="commands" className="mt-20">
+          <h2 className="text-2xl font-semibold tracking-tight">Commands</h2>
+          <div className="mt-6 space-y-6">
+            {CATEGORIES.map((category) => (
+              <div key={category}>
+                <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{category}</h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {COMMANDS.filter((c) => c.category === category).map((c) => (
+                    <span key={c.name} title={c.description} className="rounded-md border border-border bg-card px-2.5 py-1 font-mono text-xs">{c.name}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">RM — self-hosted Discord bot</footer>
+    </div>
+  );
 }
